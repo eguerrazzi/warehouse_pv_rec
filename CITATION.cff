@@ -1,0 +1,11 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+title: "wpvrec: warehouse rooftop PV and Renewable Energy Community trade-off tool"
+type: software
+authors:
+  - family-names: Guerrazzi
+    given-names: Emanuele
+    # affiliation and ORCID to be added by the author
+version: 0.0.1
+license: MIT
+repository-code: "https://github.com/eguerrazzi/warehouse_pv_rec"
