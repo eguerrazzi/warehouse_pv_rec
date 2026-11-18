@@ -5,7 +5,8 @@ type: software
 authors:
   - family-names: Guerrazzi
     given-names: Emanuele
-    # affiliation and ORCID to be added by the author
+    affiliation: "Scuola Superiore Sant'Anna, Pisa, Italy"
+    orcid: "https://orcid.org/0000-0002-6545-2089"
 version: 0.0.1
 license: MIT
 repository-code: "https://github.com/eguerrazzi/warehouse_pv_rec"

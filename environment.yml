@@ -1,0 +1,12 @@
+# Conda environment for wpvrec. Python comes from conda; all packages are installed by pip
+# at the exact versions pinned in uv.lock (exported to requirements.lock.txt by `make lock`).
+# uv.lock stays the reference for CI and for the paper's reproducibility.
+name: wpvrec
+channels:
+  - conda-forge
+dependencies:
+  - python=3.12
+  - pip
+  - pip:
+      - -r requirements.lock.txt
+      - -e .

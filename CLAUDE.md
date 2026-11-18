@@ -11,4 +11,6 @@ Decisions taken later are in [docs/decisions.md](docs/decisions.md) and override
 - Do not change the model of spec Section 5 on your own; propose fixes and wait.
 - Code, comments, docs in English; messages to Ema in Italian.
 - Commit often; do not push.
-- `uv` is at `~/.local/bin/uv` (not on PATH by default).
+- Environment: Ema works in the conda env `wpvrec` (`environment.yml`, pip-installs the exact versions of
+  `requirements.lock.txt`). `uv.lock` is the reference lock (CI); after changing dependencies run `make lock`.
+  `uv` is at `~/.local/bin/uv` (not on PATH by default).

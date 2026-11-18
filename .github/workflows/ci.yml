@@ -15,6 +15,10 @@ jobs:
           enable-cache: true
       - name: Install
         run: uv sync --locked
+      - name: Conda export in sync with uv.lock
+        run: |
+          uv export --format requirements-txt --no-hashes --all-extras --all-groups --no-emit-project --quiet -o /tmp/req.txt
+          diff -I '^#' /tmp/req.txt requirements.lock.txt
       - name: Lint
         run: |
           uv run ruff check .

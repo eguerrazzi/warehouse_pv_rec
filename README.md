@@ -20,10 +20,19 @@ file and the input profiles to study another warehouse.
 
 ## Quick start
 
+With conda (Python from conda, packages at the exact versions of `uv.lock`):
+
 ```bash
-uv sync                 # create .venv from uv.lock (Python 3.12)
-uv run pytest           # tests
-uv run wpvrec info      # package and solver versions
+conda env create -f environment.yml
+conda activate wpvrec
+pytest                  # tests
+wpvrec info             # package and solver versions
+```
+
+With uv (used by CI; `uv.lock` is the reference lock file):
+
+```bash
+uv sync && uv run pytest && uv run wpvrec info
 ```
 
 Dashboard (later phases): `uv sync --extra dashboard && uv run streamlit run dashboard/app.py`.
