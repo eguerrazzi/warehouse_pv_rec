@@ -2,7 +2,10 @@
 
 The roof with the PV array is lifted above the building and the two walls facing the
 viewer are cut away, so that the AVS/RS, the picking area, the docks, the forklifts and the
-offices are visible. Labels read the registry. Run ``wpvrec figures illustration``.
+offices are visible. The layout is a U-flow: both lifts at the front end of the AVS/RS aisle, the
+picking area in front of them and the inbound and outbound docks on the same wall, served by one
+pool of forklifts (as in the LP, constraint V7). Labels read the registry.
+Run ``wpvrec figures illustration``.
 
 Projection: (x, y, z) -> (X, Y) = ((x - y) cos 30, (x + y) sin 30 + z). The viewer stands at
 the corner x = y = 0: faces at the minimum x and minimum y of a box, and its top, are
@@ -162,7 +165,10 @@ def overview(reg: Registry):
     rx0, rx1, rz = 4.0, 25.0, 9.0
     tiers = int(v("n_tiers"))
     lane_a, aisle, lane_b = (5.0, 11.5), (11.5, 14.0), (14.0, 20.5)
-    s.box(rx1, aisle[0], 0, 2.2, aisle[1] - aisle[0], rz + 1.4, "#a9a69c")  # inbound lift
+    # U-flow: both lifts at the front end of the aisle, facing the picking area and the docks
+    lift_in, lift_out = (aisle[0] - 2.5, aisle[0] - 0.1), (aisle[1] + 0.1, aisle[1] + 2.5)
+    for y0, y1 in (lift_out, lift_in):  # farther first
+        s.box(rx1 + 0.2, y0, 0, 2.2, y1 - y0, rz + 2.4, STEEL)
 
     def lanes(y0, y1, alpha):
         s.box(rx0, y0, 0, rx1 - rx0, y1 - y0, rz, "#c9c6bd", ec="#9c9a93", lw=0.5, alpha=alpha)
@@ -186,7 +192,6 @@ def overview(reg: Registry):
         s.box(sx, aisle[0] + 0.25, k * rz / tiers + 0.1, 2.2, aisle[1] - aisle[0] - 0.5, 0.8,
               VIOLET, ec="white")  # fmt: skip
     lanes(*lane_a, 0.42)
-    s.box(rx0 - 2.4, aisle[0], 0, 2.2, aisle[1] - aisle[0], rz + 1.4, "#a9a69c")  # outbound lift
 
     # forklifts near the docks
     for k in range(int(v("n_forklifts"))):
@@ -203,6 +208,14 @@ def overview(reg: Registry):
     for dx in (29.0, 36.0):
         s.quad([(dx, 0, 0), (dx + 5, 0, 0), (dx + 5, 0, 4.5), (dx, 0, 4.5)], "#b9c3cc",
                ec="#8a96a1", alpha=0.6)  # fmt: skip
+    s.text((31.5, 0, 5.4), "IN", fs=7, color=INK2, weight="bold")
+    s.text((38.5, 0, 5.4), "OUT", fs=7, color=INK2, weight="bold")
+
+    # material flow on the floor: in-door -> inbound lift; outbound lift -> picking -> out-door
+    for p0, p1, rad in [((31.0, 0.8, 0.1), (rx1 + 1.3, lift_in[0] - 0.2, 0.1), -0.2),
+                        ((rx1 + 2.5, lift_out[0] + 1.2, 0.1), (29.8, 15.0, 0.1), 0.0),
+                        ((37.0, 11.6, 0.1), (38.6, 0.8, 0.1), 0.0)]:  # fmt: skip
+        s.arrow(p0, p1, INK2, lw=1.4, ls=(0, (3, 2)), rad=rad)
 
     # trucks at the docks
     for tx in (29.2, 36.2):
@@ -255,13 +268,13 @@ def overview(reg: Registry):
          f"AVS/RS: {int(v('n_tiers'))} tiers, {v('missions_per_day'):,.0f} missions/day, "
          f"C = {v('capacity_c'):.0f}/h"),
         ((rx0 + 13, aisle[0] + 0.5, rz * 0.8 + 1.0), "Shuttle + satellite, one per tier"),
-        ((rx0 - 1.3, aisle[0], rz + 2.6), "Outbound lift (picking, replenishment)"),
-        ((rx1 + 1.1, aisle[0], rz + 2.6), "Inbound lift (storage of incoming pallets)"),
+        ((rx1 + 1.3, lift_out[1], rz + 3.8), "Outbound lift: to picking and outbound docks"),
+        ((rx1 + 1.3, lift_in[0] - 1.2, rz + 3.2), "Inbound lift: storage of incoming pallets"),
         ((37, 24, 5.6), "Offices, IT, lighting: fixed loads"),
-        ((34, 15, 5.2), "Picking area (forward stock)"),
+        ((40.5, 15, 4.4), "Picking area (forward stock)"),
         ((42.2, 7.5, 3.6), f"Chargers, {v('charger_kw'):g} kW per forklift"),
         ((31, 4.5, 4.4), f"{int(v('n_forklifts'))} Li-ion forklifts serving the docks"),
-        ((33, -7, 6.0), "Trucks at the docks (inbound and outbound)"),
+        ((33, -7, 6.0), "Docks on one side (U-flow): inbound IN, outbound OUT"),
         ((48.8, -2.5, 3.6), "Site meter: PV used, exported, imported each hour"),
         ((px, py, 14.6), "Public grid"),
         ((66, 27, 8.0), f"Renewable Energy Community: {int(v('n_households'))} households, "
@@ -297,9 +310,11 @@ def overview(reg: Registry):
         (BLUE, "-", "PV used on site (F1)"),
         (ORANGE, "-", "PV exported to the grid"),
         (ORANGE, "--", "shared energy in the REC (virtual)"),
+        (INK2, ":", "pallet flow"),
     ]):  # fmt: skip
         yy = lgy - 2.4 * k
-        ax.plot([lgx, lgx + 3.5], [yy, yy], color=col, lw=2.6, ls=ls, zorder=210)
+        ax.plot([lgx, lgx + 3.5], [yy, yy], color=col, lw=2.6 if col != INK2 else 1.6, ls=ls,
+                zorder=210)
         ax.text(lgx + 4.3, yy, txt, fontsize=8, va="center", color=INK, zorder=210)
     ax.set_title("The case study: a logistics SME with automated storage, rooftop PV and a REC",
                  loc="left", fontsize=11, color=INK)  # fmt: skip
