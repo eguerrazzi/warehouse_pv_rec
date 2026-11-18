@@ -1,0 +1,16 @@
+source: GME, MGP zonal prices, zone CNOR, year 2025 (file *_60.xlsx, sheet Prezzi-Prices)
+url: https://www.mercatoelettrico.org/it-it/Home/Esiti/Elettricita/MGP/Statistiche/DatiStorici/moduleId/10874/controller/GmeDatiStoriciItem/action/DownloadFile?fileName=Anno2025.zip
+licence: GME terms of use (www.mercatoelettrico.org, 'Condizioni generali di utilizzo'); raw files not
+  redistributed, aggregated profiles only
+retrieved: '2026-11-18'
+raw_file: raw/gme/Anno2025.zip
+raw_sha256: 62e10d5c2c11ad7ab8b8086a82394d55a10f614cc352aab137d1af215b772766
+source_type: real
+unit: EUR/MWh
+processing:
+- Ora 1..24 = local slot t; 25th hour of the DST day dropped
+- Oct-Dec values are GME hourly re-elaborations of 15-minute prices
+- mean by (month, day type, slot); day type from the Italian 2025 calendar
+file: prices_cnor_2025.csv
+processed: '2026-11-18'
+sha256: e063b011ac7eeaf915a0cf2088fa1aee7244611d8898dae6ac731927fa6c1ff1

@@ -18,6 +18,9 @@ dependencies = [
     "pvlib>=0.11",
     "plotly>=5.22",
     "matplotlib>=3.8",
+    "openpyxl>=3.1.5",
+    "scipy>=1.17.1",
+    "python-dateutil>=4.0.0",
 ]
 
 [project.optional-dependencies]

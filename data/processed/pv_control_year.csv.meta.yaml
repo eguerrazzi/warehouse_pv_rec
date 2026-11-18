@@ -1,0 +1,41 @@
+source: PVGIS v5.3 (JRC), seriescalc, PVGIS-SARAH3
+url: https://re.jrc.ec.europa.eu/api/v5_3/seriescalc?lat=43.1668&lon=11.7716&startyear=2005&endyear=2023&pvcalculation=1&peakpower=1&loss=14&mountingplace=free&aspect=0&outputformat=json&optimalinclination=1
+licence: PVGIS (c) European Union, 2001-2026; reuse authorised with acknowledgement (Commission Decision
+  2011/833/EU)
+retrieved: '2026-11-18'
+raw_file: raw/pvgis/pvgis_seriescalc_43.1668_11.7716_2005_2023.json
+raw_sha256: 15005f812315aa302337871e09f654fd5bb7b415161e48ed988a16aa7521a297
+source_type: real
+pvgis_inputs:
+  location:
+    latitude: 43.1668
+    longitude: 11.7716
+    elevation: 316.0
+  meteo_data:
+    radiation_db: PVGIS-SARAH3
+    meteo_db: ERA5
+    year_min: 2005
+    year_max: 2023
+    use_horizon: true
+    horizon_db: null
+    horizon_data: DEM-calculated
+  mounting_system:
+    fixed:
+      slope:
+        value: 37
+        optimal: true
+      azimuth:
+        value: 0
+        optimal: false
+      type: free-standing
+  pv_module:
+    technology: c-Si
+    peak_power: 1.0
+    system_loss: 14.0
+unit: kWh per kWp in each local clock hour (slot t = [t-1, t))
+processing:
+- UTC hourly PVGIS values (W per kWp) converted to Europe/Rome local time
+- 'mean over the days of 2023 for each (month, slot): the control year'
+file: pv_control_year.csv
+processed: '2026-11-18'
+sha256: 6fd24264658f9e6c9da371f0c1e9ed97b8bd00b83ba9715e028edd871f51cd70

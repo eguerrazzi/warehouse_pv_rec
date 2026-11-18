@@ -14,3 +14,5 @@ Decisions taken later are in [docs/decisions.md](docs/decisions.md) and override
 - Environment: Ema works in the conda env `wpvrec` (`environment.yml`, pip-installs the exact versions of
   `requirements.lock.txt`). `uv.lock` is the reference lock (CI); after changing dependencies run `make lock`.
   `uv` is at `~/.local/bin/uv` (not on PATH by default).
+- Keep [docs/guida.md](docs/guida.md) (plain-language guide for Ema, in Italian) up to date at the end of every
+  phase; figures in docs/figures are regenerated with `wpvrec figures`.

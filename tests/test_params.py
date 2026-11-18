@@ -14,7 +14,7 @@ FIXTURES = __import__("pathlib").Path(__file__).parent / "fixtures" / "params"
 APPENDIX_A_IDS = {
     # A.1 warehouse
     "system_type", "avsrs_installed_power", "location", "shift_start", "shift_end",
-    "working_days_per_year", "missions_per_day", "n_inbound", "n_picks", "n_replenishment",
+    "calendar_year", "missions_per_day", "n_inbound", "n_picks", "n_replenishment",
     "n_reslotting", "shiftable_share", "pallet_mass", "e_mission_gross", "regen_share",
     "e_mission_net", "e_mission_sbsrs", "avsrs_standby_kw", "capacity_c", "rho_max",
     "n_pwl_cuts", "n_forklifts", "forklift_kwh_per_h", "forklift_use_hours", "battery_kwh",
@@ -36,7 +36,9 @@ APPENDIX_A_IDS = {
     "pv_cost", "pv_om", "pv_insurance", "pv_life", "investment_incentive", "rec_fee",
     "retail_price", "discount_rate",
 }  # fmt: skip
-APPENDIX_A_CHECKS = {"site_consumption_split", "annual_site_consumption", "specific_yield"}
+APPENDIX_A_CHECKS = {
+    "site_consumption_split", "annual_site_consumption", "specific_yield", "working_days_per_year"
+}  # fmt: skip
 
 
 @pytest.fixture(scope="module")

@@ -15,7 +15,7 @@ The base case is an SME with a pallet AVS/RS in Torrita di Siena (Tuscany), insp
 Guerrazzi et al. (2019), *Sustainability* 11(14) 3817. The method is general: replace the parameter
 file and the input profiles to study another warehouse.
 
-> **Status:** Phase 1 (parameter registry). The approved specification is in
+> **Status:** Phase 2 (input data). Plain-language guide (Italian): [docs/guida.md](docs/guida.md). The approved specification is in
 > [docs/spec/specification_v1.md](docs/spec/specification_v1.md).
 
 ## Quick start
@@ -34,6 +34,8 @@ With uv (used by CI; `uv.lock` is the reference lock file):
 ```bash
 uv sync && uv run pytest && uv run wpvrec info
 ```
+
+Input data: `wpvrec data download && wpvrec data process`; figures: `wpvrec figures`.
 
 Dashboard (later phases): `uv sync --extra dashboard && uv run streamlit run dashboard/app.py`.
 

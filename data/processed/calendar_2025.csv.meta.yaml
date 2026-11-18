@@ -1,0 +1,11 @@
+source: Italian national public holidays, 2025 (Law 260/1949 as amended)
+url: https://www.normattiva.it/uri-res/N2Ls?urn:nir:stato:legge:1949-05-27;260
+licence: public law
+retrieved: computed
+source_type: derived
+processing:
+- Mon-Fri minus national holidays (Easter Monday from the Gregorian computus)
+- patron-saint holiday not included
+file: calendar_2025.csv
+processed: '2026-11-18'
+sha256: 2a6cd75f8168dc2fca9beea6559a471aa4d5ef5ca6aa96a853c82db8408c5d4c

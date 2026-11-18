@@ -13,7 +13,6 @@ from wpvrec import __version__
 
 # Planned commands and the phase that implements them (specification Section 11).
 _PLANNED = {
-    "data": 2,
     "solve": 3,
     "front": 4,
     "run": 6,
@@ -120,12 +119,81 @@ def _add_params(sub) -> None:
     s.set_defaults(func=_cmd_params_show)
 
 
+def _cmd_data(args: argparse.Namespace) -> int:
+    import wpvrec.data as data
+    from wpvrec.params import load_registry
+
+    reg = load_registry(args.file)
+    if args.data_command == "download":
+        for name, path in data.download(reg, args.sources, args.force).items():
+            print(f"{name}: {path}")
+    elif args.data_command == "process":
+        rep = data.process(reg)
+        pv = rep["pvgis"]
+        print(
+            f"PV specific yield, typical year: {pv['typical_yield']:.0f} kWh/kWp/yr "
+            f"(expected 1,200-1,350 for Centre Italy); control year: {pv['control_yield']:.0f}"
+        )
+        print(f"PVGIS optimal slope: {pv['optimal_slope']}")
+        print(
+            f"GME {reg.value('gme_zone')} {int(reg.value('gme_year'))}: mean "
+            f"{rep['gme']['mean']} EUR/MWh over {rep['gme']['hours']} hours"
+        )
+        print(f"ELMAS: {rep['elmas']['clusters']} clusters, {rep['elmas']['hours']} hours")
+        print(
+            f"Calendar {int(reg.value('calendar_year'))}: "
+            f"{rep['calendar']['working_days']} working days"
+        )
+    elif args.data_command == "sources":
+        from wpvrec.data.common import write_sources_md
+
+        print(write_sources_md())
+    return 0
+
+
+def _cmd_figures(args: argparse.Namespace) -> int:
+    from wpvrec.params import load_registry
+
+    reg = load_registry(args.file)
+    if args.which in ("schematics", "all"):
+        from wpvrec.figures.schematics import make_all
+
+        for p in make_all(registry=reg):
+            print(p)
+    if args.which in ("data", "all"):
+        from wpvrec.figures.data_figures import make_all as make_data
+
+        for p in make_data(registry=reg):
+            print(p)
+    return 0
+
+
+def _add_data_and_figures(sub) -> None:
+    from wpvrec.params import DEFAULT_REGISTRY
+
+    d = sub.add_parser("data", help="download and process input data")
+    dsub = d.add_subparsers(dest="data_command", required=True)
+    dl = dsub.add_parser("download", help="fetch raw files into data/raw (idempotent)")
+    dl.add_argument("sources", nargs="*", default=["pvgis", "gme", "elmas"])
+    dl.add_argument("--force", action="store_true", help="download again")
+    dsub.add_parser("process", help="write processed profiles and sanity checks")
+    dsub.add_parser("sources", help="regenerate data/SOURCES.md from the sidecars")
+    for q in (d,):
+        q.add_argument("--file", default=DEFAULT_REGISTRY, help="registry YAML file")
+    d.set_defaults(func=_cmd_data)
+    f = sub.add_parser("figures", help="generate figures into docs/figures")
+    f.add_argument("which", nargs="?", default="all", choices=["schematics", "data", "all"])
+    f.add_argument("--file", default=DEFAULT_REGISTRY, help="registry YAML file")
+    f.set_defaults(func=_cmd_figures)
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="wpvrec", description=__doc__)
     parser.add_argument("--version", action="version", version=f"wpvrec {__version__}")
     sub = parser.add_subparsers(dest="command", required=True)
     sub.add_parser("info", help="print package and solver versions").set_defaults(func=_cmd_info)
     _add_params(sub)
+    _add_data_and_figures(sub)
     for name, phase in _PLANNED.items():
         p = sub.add_parser(name, help=f"(not implemented yet, Phase {phase})")
         p.set_defaults(func=lambda _a, n=name, ph=phase: _not_yet(n, ph))

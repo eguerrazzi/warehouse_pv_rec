@@ -18,3 +18,8 @@ Decisions taken with Ema during development that change or clarify the specifica
 | 2026-11-18 | PV tilt = PVGIS optimal (confirmed); PV size 80 kWp as design_choice (confirmed); household profile = Besagni et al. 2020, digitised in Phase 2 (confirmed). | 1 |
 | 2026-11-18 | SBS/RS energy per mission source completed: Lerher, Ekren, Akpunar (2016), 14th IMHRC, Table 2 p. 10. | 1 |
 | 2026-11-18 | Sensitivity range of the gross energy per mission from Akpunar, Ekren, Lerher (2017) Table 2 (20.0-37.1 Wh), replacing the unverified 0.0197-0.0406 kWh of the sheet. N = 1,500 anchored also to Lupi et al. (2024) (1,529 missions/day). C unchanged (Lupi fixed times give 289/h, within range). | 1 |
+| 2026-11-18 | Site coordinates from OpenStreetMap (43.1668 N, 11.7716 E). Calendar year 2025 (same as GME): 251 working days, national holidays only; the sheet's 250 kept as a check. | 2 |
+| 2026-11-18 | PVGIS-SARAH3 2005-2023, south, optimal tilt (37 deg), 14% losses, free-standing; typical year = mean per (month, local slot). Specific yield 1,401 kWh/kWp (PVcalc 1,417), above the sheet's 1,300 estimate: 80 kWp give 112 MWh/yr. Control year 2023. | 2 |
+| 2026-11-18 | GME CNOR 2025 hourly (Oct-Dec = GME hourly re-elaboration of 15-min prices); profiles by month and day type. Only aggregated profiles committed. | 2 |
+| 2026-11-18 | ELMAS clusters by NACE (LV-a): bar 56.30 -> 9, shop 47.11 -> 3, office 69.20/70.22/82.11 -> 5, warehouse 52.10 -> 3. Timestamps read as UTC (no DST gaps). | 2 |
+| 2026-11-18 | Besagni et al. (2020) Fig. 13 duplicates Fig. 12: household profile still open (to agree with Ema). | 2 |

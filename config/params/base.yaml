@@ -56,21 +56,19 @@ parameters:
   - id: site_latitude
     group: warehouse
     description: Site latitude (Torrita di Siena)
-    value: 43.17
+    value: 43.1668
     unit: "deg N"
-    source: "Approximate coordinates given in the specification (Sect. 4); to verify in Phase 2"
+    source: "OpenStreetMap Nominatim, Torrita di Siena municipality (relation 42341), retrieved 2026-11-18; matches the spec (about 43.17 N, 11.77 E)"
     source_type: real
-    status: to_verify
     used_by: [data]
 
   - id: site_longitude
     group: warehouse
     description: Site longitude (Torrita di Siena)
-    value: 11.77
+    value: 11.7716
     unit: "deg E"
-    source: "Approximate coordinates given in the specification (Sect. 4); to verify in Phase 2"
+    source: "OpenStreetMap Nominatim, Torrita di Siena municipality (relation 42341), retrieved 2026-11-18; matches the spec (about 43.17 N, 11.77 E)"
     source_type: real
-    status: to_verify
     used_by: [data]
 
   - id: shift_start
@@ -93,16 +91,15 @@ parameters:
     source_type: estimate
     used_by: [model]
 
-  - id: working_days_per_year
+  - id: calendar_year
     group: warehouse
-    symbol: "\\sum_d w_d"
-    description: Working days per year (Mon-Fri minus public holidays)
-    value: 250
-    unit: days/yr
-    source: "Parameter sheet 17/11/2026; replaced in Phase 2 by the count from the Italian calendar"
-    source_type: estimate
-    status: to_verify
-    used_by: [model]
+    description: Reference year of the working-day calendar (weights w_d of the 12 days)
+    value: 2025
+    unit: year
+    source: "Same year as the GME prices: last complete year (spec Sect. 4). Working days = Mon-Fri minus Italian national holidays; patron-saint holiday not included"
+    source_type: design_choice
+    used_by: [model, data]
+    notes: "2025 gives 251 working days (sheet: 250, kept as a check)."
 
   - id: missions_per_day
     group: warehouse
@@ -577,6 +574,42 @@ parameters:
     source_type: design_choice
     used_by: [data]
 
+  - id: pv_mounting
+    group: pv
+    description: PVGIS mounting position
+    value: free
+    unit: "-"
+    source: "PVGIS 'free-standing' (rack-mounted on the roof with ventilation), PVGIS and pvlib default; 'building' (integrated) not assumed"
+    source_type: design_choice
+    used_by: [data]
+
+  - id: pvgis_start_year
+    group: pv
+    description: First year of the PVGIS series used for the typical year
+    value: 2005
+    unit: year
+    source: "First year of PVGIS-SARAH3 hourly data (PVGIS v5.3 API, checked 2026-11-18)"
+    source_type: design_choice
+    used_by: [data]
+
+  - id: pvgis_end_year
+    group: pv
+    description: Last year of the PVGIS series used for the typical year
+    value: 2023
+    unit: year
+    source: "Last year of PVGIS-SARAH3 hourly data (PVGIS v5.3 API, checked 2026-11-18)"
+    source_type: design_choice
+    used_by: [data]
+
+  - id: pv_control_year
+    group: pv
+    description: Control year (most recent complete PVGIS year)
+    value: 2023
+    unit: year
+    source: "Specification Sect. 4: most recent complete year available in PVGIS"
+    source_type: design_choice
+    used_by: [data]
+
   # ================================================================ A.3 Orders and service
   - id: cutoff_hour
     group: orders
@@ -826,9 +859,9 @@ parameters:
     value: null
     unit: kWh per hour
     sensitivity: ["-20%", "+20%"]
-    source: "Besagni, Premoli Vilà, Borgarello (2020), Buildings 10(12) 217 (67 measured households): published only as figures; to digitise in Phase 2 (Ema 18/11/2026)"
+    source: "Besagni, Premoli Vila, Borgarello (2020), Buildings 10(12) 217, doi:10.3390/buildings10120217: Figure 13 (p. 15) reproduces Figure 12 (microwave usage probability), so the load profile cannot be digitised; alternative to agree with Ema"
     source_type: literature
-    status: to_be_derived
+    status: to_be_provided
     used_by: [rec]
 
   - id: household_kwh
@@ -860,6 +893,42 @@ parameters:
     source: "ELMAS dataset (2023), Scientific Data; figshare doi:10.6084/m9.figshare.23889780 (CC BY 4.0)"
     source_type: real
     used_by: [rec, data]
+
+  - id: elmas_cluster_bar
+    group: rec
+    description: ELMAS cluster of the bar (NACE 56.30 beverage serving activities, LV-a)
+    value: 9
+    unit: cluster
+    source: "ELMAS Clusters_after_manual_reclassification.csv: class 56.30, LV-a -> cluster 9"
+    source_type: design_choice
+    used_by: [rec, data]
+
+  - id: elmas_cluster_shop
+    group: rec
+    description: ELMAS cluster of the shop (NACE 47.11 retail in non-specialised stores, LV-a)
+    value: 3
+    unit: cluster
+    source: "ELMAS Clusters_after_manual_reclassification.csv: class 47.11, LV-a -> cluster 3"
+    source_type: design_choice
+    used_by: [rec, data]
+
+  - id: elmas_cluster_office
+    group: rec
+    description: ELMAS cluster of the office (NACE 69.20 accounting / 70.22 consultancy / 82.11 office administration, LV-a)
+    value: 5
+    unit: cluster
+    source: "ELMAS Clusters_after_manual_reclassification.csv: classes 69.20, 70.22, 82.11, LV-a -> cluster 5"
+    source_type: design_choice
+    used_by: [rec, data]
+
+  - id: elmas_cluster_warehouse
+    group: loads
+    description: ELMAS cluster for the optional shape of the warehouse fixed load (NACE 52.10 warehousing and storage, LV-a)
+    value: 3
+    unit: cluster
+    source: "ELMAS Clusters_after_manual_reclassification.csv: class 52.10, LV-a/LV-b/MV -> cluster 3"
+    source_type: design_choice
+    used_by: [model, data]
 
   - id: w_rec_annual
     group: rec
@@ -928,6 +997,24 @@ parameters:
     sensitivity: ["-30%", "+30%"]
     source: "GME (Gestore dei Mercati Energetici), downloaded in Phase 2"
     source_type: real
+    used_by: [rec, data]
+
+  - id: gme_zone
+    group: incentives
+    description: GME bidding zone of the site
+    value: CNOR
+    unit: "-"
+    source: "Tuscany belongs to the Centre-North zone (CNOR) of the Italian day-ahead market (GME)"
+    source_type: real
+    used_by: [rec, data]
+
+  - id: gme_year
+    group: incentives
+    description: Year of the zonal prices (last complete year)
+    value: 2025
+    unit: year
+    source: "Specification Sect. 4: last complete year; GME 'Dati storici' Anno2025.zip"
+    source_type: design_choice
     used_by: [rec, data]
 
   - id: pi_arera
@@ -1133,6 +1220,13 @@ parameters:
     used_by: [model]
 
 checks:
+  - id: working_days_per_year
+    description: Working days per year
+    expected: {about: 250}
+    unit: days/yr
+    source: "Approved sheet 17/11/2026; the model uses the calendar of calendar_year (2025: 251)"
+    source_type: estimate
+
   - id: site_consumption_split
     description: Split of warehouse consumption (lighting, handling, other)
     expected: {lighting: 29, handling: 14, other: 57}

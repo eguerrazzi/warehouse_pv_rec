@@ -1,0 +1,15 @@
+source: ELMAS dataset (Bellinguer et al. 2023), Time_series_18_clusters.csv, France 2018
+url: https://doi.org/10.6084/m9.figshare.23889780 (file https://ndownloader.figshare.com/files/41895786)
+licence: CC BY 4.0 (Bellinguer, Girard, Bocquet, Chevalier 2023)
+retrieved: '2026-11-18'
+raw_file: raw/elmas/ELMAS_dataset.zip
+raw_sha256: f91914f92418613adaef9518ba2362d711cd018bdacad03e4b9917ac55f992e2
+source_type: real
+unit: share of the cluster's annual energy in one hour (mean over days of the group)
+processing:
+- UTC timestamps (no DST gaps) converted to Europe/Rome local time
+- each cluster normalised to its 2018 annual energy
+- mean by (cluster, month, day type, slot); day type from the French 2018 calendar
+file: elmas_shapes.csv
+processed: '2026-11-18'
+sha256: e77f76f639f78f05dfbed502a3bbefe4ee02642665254475b66cac44591646e0
