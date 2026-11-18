@@ -18,7 +18,7 @@ def test_cli_info_runs(capsys):
 
 
 def test_cli_planned_command_says_not_implemented(capsys):
-    assert main(["solve"]) == 2
+    assert main(["front"]) == 2
     assert "not implemented yet" in capsys.readouterr().err
 
 

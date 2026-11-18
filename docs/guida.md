@@ -1,6 +1,6 @@
 # Come funziona lo strumento — guida in parole semplici
 
-> Guida per Ema, aggiornata a ogni fase. Ultimo aggiornamento: **Fase 2 (dati di input)**, 18/11/2026.
+> Guida per Ema, aggiornata a ogni fase. Ultimo aggiornamento: **Fase 3 (modello LP)**, 18/11/2026.
 > I dettagli tecnici sono in inglese in [spec/specification_v1.md](spec/specification_v1.md),
 > [decisions.md](decisions.md) e [data.md](data.md).
 
@@ -129,21 +129,53 @@ solare va in rete; vengono contati a parte nei totali annui e nella CER.
    elettrodomestici (dati di Nazemi et al. 2021 e Cruz et al. 2019): servono i due articoli. Finché manca,
    il calcolo della CER resta bloccato (serve solo dalla Fase 5).
 
-## 9. A che punto siamo
+## 9. Il modello risolto: primi risultati (Fase 3)
+
+Il modello lineare (vincoli V1–V9 della specifica) si risolve in **circa 1 secondo** per i 12 giorni
+rappresentativi. Ogni soluzione viene controllata automaticamente: bilanci energetici ora per ora, tutte le
+missioni fatte, batterie dei carrelli mai sotto il 20%, area picking mai sotto la scorta minima, buffer rispettato.
+
+![Un giorno di luglio ottimizzato nei due modi estremi](figures/plan_july.png)
+
+| | Miglior servizio (min F2) | Massimo solare usato (max F1) |
+|---|---|---|
+| F1, solare autoconsumato | 57.912 kWh/anno | 58.103 kWh/anno |
+| F2, produttività persa | 785 missioni·h/anno (solo coda, zero ritardi) | 1.055 missioni·h/anno |
+
+**Cosa vuol dire, in parole semplici.**
+- Il magazzino consuma **95 MWh/anno** e il fotovoltaico da 70 kWp ne produce **98**: il 59% del solare viene
+  usato in casa e copre il 61% dei consumi.
+- La **ricarica dei carrelli** (la parte verde) è il grande carico spostabile e il modello la mette nelle ore di sole
+  *anche quando pensa solo al servizio*, perché spostarla non crea code né ritardi.
+- Le **missioni del magazzino automatico** (la striscia blu) consumano pochissimo: circa 15 Wh l'una, 22 kWh al
+  giorno in tutto. Spostarle verso il sole fa guadagnare solo **circa 190 kWh/anno** (0,3%) e costa il 34% di coda
+  in più.
+- Quindi, nel caso base, **il compromesso fra solare e produttività esiste ma è piccolo**. È già una risposta
+  alla prima domanda del paper; l'analisi di sensitività (Fase 6) mostrerà quando diventa importante: più missioni,
+  sistemi meno efficienti, capacità minore.
+- Il **pre-picking** possibile è di 97,5 prelievi al giorno (non 195): gli ordini arrivati la sera prima sono già
+  disponibili alle 6 e non si possono anticipare. Il modello ne anticipa in media 37 al giorno.
+
+![La coda del magazzino automatico](figures/queue_cuts.png)
+
+La curva nera è la formula classica della coda (M/M/1): l'attesa esplode quando il magazzino si avvicina alla
+capacità. Il modello lineare la approssima con 4 segmenti (linea tratteggiata), esatti nei punti blu.
+
+## 10. A che punto siamo
 
 | Fase | Contenuto | Stato |
 |---|---|---|
 | 0 | Struttura del progetto, ambiente, test automatici | fatta |
 | 1 | Registro dei parametri con fonti, controllo di provenienza | fatta |
 | 2 | Dati: PV, prezzi, consumi, calendario, giorni rappresentativi | fatta (manca il profilo delle famiglie) |
-| 3 | Il modello LP con i vincoli V1–V9 | da fare |
+| 3 | Il modello LP con i vincoli V1–V9 | fatta |
 | 4 | Frontiera di Pareto, prezzi ombra, politiche P0/P1 | da fare |
 | 5 | CER ed economia (condizioni B e C) | da fare |
 | 6 | Scenari di sensitività, cluster SLURM | da fare |
 | 7 | Dashboard interattiva | da fare |
 | 8 | Documentazione finale, riproducibilità | da fare |
 
-## 10. Piccolo glossario
+## 11. Piccolo glossario
 
 - **AVS/RS**: magazzino automatico con veicoli autonomi; qui elevatori, shuttle e satelliti.
 - **Shuttle e satellite**: lo shuttle corre lungo il corridoio del piano, il satellite entra nel canale profondo a
@@ -157,7 +189,7 @@ solare va in rete; vengono contati a parte nei totali annui e nella CER.
 - **Prezzo ombra**: quanto peggiora F2 se chiedo 1 kWh in più di F1.
 - **TIP**: tariffa incentivante premio della CER (DM 414/2023).
 
-## 11. Comandi utili
+## 12. Comandi utili
 
 ```bash
 conda activate wpvrec
@@ -166,5 +198,7 @@ wpvrec params table -o docs/params_base.md   # rigenera la tabella dei parametri
 wpvrec data download            # scarica PVGIS, GME, ELMAS (solo se non già presenti)
 wpvrec data process             # produce i profili e stampa i controlli
 wpvrec figures                  # rigenera tutte le figure di docs/figures
+wpvrec solve                    # risolve il modello (min F2) e controlla i bilanci
+wpvrec solve --objective max_F1 # risolve massimizzando il solare autoconsumato
 pytest                          # esegue i test
 ```

@@ -29,6 +29,7 @@
 | AVS/RS capacity and congestion | Hourly capacity of the AVS/RS | C | 392.4 | missions/h | — | Tier shuttles in parallel, each at the Guerrazzi et al. (2019) mean mission time; replaces the formula of spec Sect. 3.5 (lifts are dedicated and not the bottleneck in Guerrazzi et al. (2019)) [formula: n_active_shuttles * SECONDS_PER_HOUR / mission_cycle_time] | Derivato | to_verify |
 | AVS/RS capacity and congestion | Maximum utilisation of the AVS/RS in any hour | \bar\rho | 0.9 | - | 0.8–0.95 | Common practice for queueing systems (approved sheet 17/11/2026) | Ipotesi | confirmed |
 | AVS/RS capacity and congestion | Linear pieces of the M/M/1 congestion curve | \|L\| | 4 | cuts | — | Specification Sect. 5.5 (V6) | Scelta di progetto | confirmed |
+| AVS/RS capacity and congestion | Breakpoints of the piecewise-linear queue curve, as fractions of rho_max (one more than the cuts) |  | 0, 0.5, 0.75, 0.9, 1 | fraction of rho_max | — | Design choice: denser where the M/M/1 curve is steep; secant cuts exact at the breakpoints (spec Sect. 5.5, V6) | Scelta di progetto | confirmed |
 | Forklifts and docks | Lithium-ion forklifts serving the docks | \|F\| | 4 | forklifts | 2–8 | Assumption of the approved sheet 17/11/2026 | Ipotesi | confirmed |
 | Forklifts and docks | Use of each forklift at the docks |  | 5 | h/day per forklift | 3–8 | Assumption of the approved sheet 17/11/2026 | Ipotesi | confirmed |
 | Forklifts and docks | Total dock workload | \sum_t h_t | 20 | cart-h/day | — | Forklifts x use per forklift (sheet 17/11/2026) [formula: n_forklifts * forklift_use_hours] | Derivato | confirmed |
@@ -115,3 +116,5 @@
 | Reference policies | P1 follow the sun: start of the window for shiftable missions and charging |  | 11 | h (clock) | 10–12 | Specification Sect. 1 and 5.8 (sunny hours about 11:00-15:00) | Ipotesi | confirmed |
 | Reference policies | P1 follow the sun: end of the window for shiftable missions and charging |  | 15 | h (clock) | 14–16 | Specification Sect. 1 and 5.8 (sunny hours about 11:00-15:00) | Ipotesi | confirmed |
 | Solution method | Points of the epsilon-constraint grid | K | 25 | points | 20–30 | Specification Sect. 5.7 | Scelta di progetto | confirmed |
+| Solution method | LP solver (highs; gurobi or cplex if installed) |  | highs | - | — | Specification Sect. 2: HiGHS (open source) by default | Scelta di progetto | confirmed |
+| Solution method | Relative tolerance on the first objective in lexicographic solves |  | 1e-06 | - | — | Design choice: numerical slack so that the second stage stays feasible | Scelta di progetto | confirmed |

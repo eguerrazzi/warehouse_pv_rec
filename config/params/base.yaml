@@ -330,6 +330,15 @@ parameters:
     source_type: design_choice
     used_by: [model]
 
+  - id: queue_breakpoints
+    group: capacity
+    description: Breakpoints of the piecewise-linear queue curve, as fractions of rho_max (one more than the cuts)
+    value: [0.0, 0.5, 0.75, 0.9, 1.0]
+    unit: fraction of rho_max
+    source: "Design choice: denser where the M/M/1 curve is steep; secant cuts exact at the breakpoints (spec Sect. 5.5, V6)"
+    source_type: design_choice
+    used_by: [model]
+
   # ================================================================ Forklifts and docks
   - id: n_forklifts
     group: forklifts
@@ -1213,6 +1222,24 @@ parameters:
     unit: points
     sensitivity: {low: 20, high: 30}
     source: "Specification Sect. 5.7"
+    source_type: design_choice
+    used_by: [model]
+
+  - id: solver
+    group: method
+    description: LP solver (highs; gurobi or cplex if installed)
+    value: highs
+    unit: "-"
+    source: "Specification Sect. 2: HiGHS (open source) by default"
+    source_type: design_choice
+    used_by: [model]
+
+  - id: lexicographic_tolerance
+    group: method
+    description: Relative tolerance on the first objective in lexicographic solves
+    value: 1.0e-6
+    unit: "-"
+    source: "Design choice: numerical slack so that the second stage stays feasible"
     source_type: design_choice
     used_by: [model]
 

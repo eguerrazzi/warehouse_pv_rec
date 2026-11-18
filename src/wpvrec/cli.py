@@ -13,7 +13,6 @@ from wpvrec import __version__
 
 # Planned commands and the phase that implements them (specification Section 11).
 _PLANNED = {
-    "solve": 3,
     "front": 4,
     "run": 6,
     "run-local": 6,
@@ -151,6 +150,70 @@ def _cmd_data(args: argparse.Namespace) -> int:
     return 0
 
 
+def _cmd_solve(args: argparse.Namespace) -> int:
+    import time
+
+    from wpvrec import balances, days, runmeta
+    from wpvrec.model import inputs, lp, solve
+    from wpvrec.params import load_registry
+
+    reg = load_registry(args.file)
+    reg.gate("model")
+    t0 = time.time()
+    rep = days.build(reg, args.pv)
+    inp = inputs.build(reg, rep)
+    m = lp.build_model(inp)
+    solver = str(reg.value("solver"))
+    res = solve.lexicographic(m, args.objective, reg.value("lexicographic_tolerance"), solver)
+    wall = time.time() - t0
+    plan = balances.plan_frame(m, inp)
+    chk = balances.verify(m, inp)
+    rnd = balances.rounding_effect(m, inp)
+    ann = balances.annual_summary(plan, rep, reg.value("offshift_standby_kw"))
+    pre = float((plan["prepicks"] * plan["weight"]).sum())
+    print(
+        f"Objective {args.objective} (lexicographic), PV {args.pv} year, solver {solver}, "
+        f"{wall:.1f} s"
+    )
+    print(f"  F1 = {res.F1:,.0f} kWh/yr PV self-consumed")
+    print(
+        f"  F2 = {res.F2:,.1f} missions*h/yr (lateness {res.F2_late:,.1f}, "
+        f"queue {res.F2_queue:,.1f}); pallets after cut-off: "
+        f"{(plan['late_picks'] * plan['weight']).sum():,.1f}/yr"
+    )
+    print(
+        f"  rounding missions to integers: F1 {rnd['F1'] - res.F1:+,.1f} kWh, "
+        f"F2 {rnd['F2'] - res.F2:+,.1f} missions*h"
+    )
+    print(
+        f"  pre-picking: potential {inp.prepick_potential():.1f} picks/day "
+        f"(nominal {reg.value('n_picks') * reg.value('predictable_share') / 100:.1f}), "
+        f"done {pre / inp.weights.sum():.1f} picks/day on average"
+    )
+    print(
+        f"  fixed loads {inp.days[0].pf.sum():.1f} kWh per working day; site "
+        f"{ann['working_day_kwh']:.1f} kWh per working day"
+    )
+    print(
+        f"  annual: PV {ann['pv_kwh'] / 1000:.1f} MWh, consumption "
+        f"{ann['consumption_kwh'] / 1000:.1f} MWh, self-consumption "
+        f"{ann['self_consumption_pct']:.1f}%, self-sufficiency {ann['self_sufficiency_pct']:.1f}%"
+    )
+    bad = {k: v for k, v in chk.items() if k != "all_ok" and v > balances.TOL}
+    print("  balances: all satisfied" if chk["all_ok"] and not bad else f"  balances: {bad}")
+    if args.out:
+        from pathlib import Path
+
+        out = Path(args.out)
+        out.mkdir(parents=True, exist_ok=True)
+        plan.to_parquet(out / "plan.parquet")
+        meta = runmeta.run_meta(reg, solver, wall, {"objective": args.objective, "F1": res.F1,
+                                "F2": res.F2, "F2_late": res.F2_late, "F2_queue": res.F2_queue,
+                                "checks": chk, "annual": ann})  # fmt: skip
+        print(f"  written {runmeta.write(out / 'run_meta.json', meta)}")
+    return 0 if chk["all_ok"] else 1
+
+
 def _cmd_figures(args: argparse.Namespace) -> int:
     from wpvrec.params import load_registry
 
@@ -164,6 +227,11 @@ def _cmd_figures(args: argparse.Namespace) -> int:
         from wpvrec.figures.illustration import make_all as make_ill
 
         for p in make_ill(registry=reg):
+            print(p)
+    if args.which in ("model", "all"):
+        from wpvrec.figures.model_figures import make_all as make_model
+
+        for p in make_model(registry=reg):
             print(p)
     if args.which in ("data", "all"):
         from wpvrec.figures.data_figures import make_all as make_data
@@ -186,9 +254,18 @@ def _add_data_and_figures(sub) -> None:
     for q in (d,):
         q.add_argument("--file", default=DEFAULT_REGISTRY, help="registry YAML file")
     d.set_defaults(func=_cmd_data)
+    s = sub.add_parser("solve", help="solve the LP once (lexicographic) and check the balances")
+    s.add_argument("--objective", choices=["min_F2", "max_F1"], default="min_F2")
+    s.add_argument("--pv", choices=["typical", "control"], default="typical")
+    s.add_argument("--out", help="directory for plan.parquet and run_meta.json")
+    s.add_argument("--file", default=DEFAULT_REGISTRY, help="registry YAML file")
+    s.set_defaults(func=_cmd_solve)
     f = sub.add_parser("figures", help="generate figures into docs/figures")
     f.add_argument(
-        "which", nargs="?", default="all", choices=["illustration", "schematics", "data", "all"]
+        "which",
+        nargs="?",
+        default="all",
+        choices=["illustration", "schematics", "data", "model", "all"],
     )
     f.add_argument("--file", default=DEFAULT_REGISTRY, help="registry YAML file")
     f.set_defaults(func=_cmd_figures)
