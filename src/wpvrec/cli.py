@@ -160,6 +160,11 @@ def _cmd_figures(args: argparse.Namespace) -> int:
 
         for p in make_all(registry=reg):
             print(p)
+    if args.which in ("illustration", "all"):
+        from wpvrec.figures.illustration import make_all as make_ill
+
+        for p in make_ill(registry=reg):
+            print(p)
     if args.which in ("data", "all"):
         from wpvrec.figures.data_figures import make_all as make_data
 
@@ -182,7 +187,9 @@ def _add_data_and_figures(sub) -> None:
         q.add_argument("--file", default=DEFAULT_REGISTRY, help="registry YAML file")
     d.set_defaults(func=_cmd_data)
     f = sub.add_parser("figures", help="generate figures into docs/figures")
-    f.add_argument("which", nargs="?", default="all", choices=["schematics", "data", "all"])
+    f.add_argument(
+        "which", nargs="?", default="all", choices=["illustration", "schematics", "data", "all"]
+    )
     f.add_argument("--file", default=DEFAULT_REGISTRY, help="registry YAML file")
     f.set_defaults(func=_cmd_figures)
 

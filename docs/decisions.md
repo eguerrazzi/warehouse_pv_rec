@@ -23,3 +23,5 @@ Decisions taken with Ema during development that change or clarify the specifica
 | 2026-11-18 | GME CNOR 2025 hourly (Oct-Dec = GME hourly re-elaboration of 15-min prices); profiles by month and day type. Only aggregated profiles committed. | 2 |
 | 2026-11-18 | ELMAS clusters by NACE (LV-a): bar 56.30 -> 9, shop 47.11 -> 3, office 69.20/70.22/82.11 -> 5, warehouse 52.10 -> 3. Timestamps read as UTC (no DST gaps). | 2 |
 | 2026-11-18 | Besagni et al. (2020) Fig. 13 duplicates Fig. 12: household profile still open (to agree with Ema). | 2 |
+| 2026-11-18 | PV resized to 70 kWp (Ema): about 100 MWh/yr / 1,401 kWh/kWp. Condition C external plant follows (70 kWp). Dock workload default (50% inbound, 50% uniform 06-16) confirmed. GME aggregated profiles in the repo: ok for now. | 2 |
+| 2026-11-18 | Household profile (Ema: investigate Mariuzzo et al. 2023): their households are built bottom-up from appliance data of Nazemi et al. 2021 and Cruz et al. 2019 (data not shared). Papers requested (7, 8). | 2 |

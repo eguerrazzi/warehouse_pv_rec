@@ -14,7 +14,11 @@ Pareto") e poi valuta quanto vale ciascun compromesso **con e senza una Comunit�
 
 ## 2. Il caso studio
 
-![Layout del caso studio](figures/site_layout.png)
+![Il caso studio in 3D](figures/case_study_3d.png)
+
+Vista "esplosa": il tetto con il fotovoltaico è sollevato e le due pareti davanti sono tolte, per vedere dentro.
+I numeri nei cerchi rimandano alla legenda sotto la figura. Lo schema dei flussi di energia, più tecnico,
+è in [figures/site_layout.png](figures/site_layout.png).
 
 - Una PMI logistica a **Torrita di Siena** con un magazzino automatico per pallet, ispirato
   all'impianto Cassioli del tuo articolo del 2019: 5 piani, 2 elevatori (uno per l'ingresso, uno per l'uscita),
@@ -22,7 +26,7 @@ Pareto") e poi valuta quanto vale ciascun compromesso **con e senza una Comunit�
 - **1.500 missioni al giorno** del magazzino automatico, 2 turni (06–22), dal lunedì al venerdì.
 - **4 carrelli elevatori al litio** servono le baie di carico; si ricaricano a 8 kW.
 - **Carichi fissi**: illuminazione, uffici, porte, compressore… (14,5 kW in turno, 2 kW fuori turno).
-- **Fotovoltaico da 80 kWp** sul tetto.
+- **Fotovoltaico da 70 kWp** sul tetto (ridimensionato con il dato PVGIS: circa 100 MWh di consumo / 1.401 kWh/kWp).
 - Il contatore misura ogni ora quanta energia solare il magazzino usa (**autoconsumo, F1**),
   quanta ne cede alla rete (**export**) e quanta ne compra (**import**).
 - La **CER** (50 famiglie e 3 piccole attività: un bar, un negozio, un ufficio) non riceve energia fisicamente: conta come
@@ -101,7 +105,7 @@ Se un dato manca, lo strumento **si rifiuta di partire** e dice che cosa serve.
 
 | Dato | Fonte | Cosa ne esce |
 |---|---|---|
-| Produzione PV | PVGIS (JRC), 2005–2023 | profilo medio ora per ora di ogni mese: **1.401 kWh/kWp all'anno**, cioè **112 MWh** per 80 kWp |
+| Produzione PV | PVGIS (JRC), 2005–2023 | profilo medio ora per ora di ogni mese: **1.401 kWh/kWp all'anno**, cioè **98 MWh** per 70 kWp |
 | Prezzi zonali | GME, zona Centro-Nord, 2025 | prezzo medio ora per ora, separato per giorni lavorativi e festivi: media **117 €/MWh** |
 | Consumi di bar, negozio e ufficio | ELMAS (dati francesi 2018, CC BY) | forma oraria di ciascuno, scalata a 20 MWh/anno |
 | Consumi delle famiglie | **mancante** (vedi sotto) | — |
@@ -118,10 +122,12 @@ solare va in rete; vengono contati a parte nei totali annui e nella CER.
 
 **Due cose da sapere:**
 1. Il PV produce più di quanto previsto dalla scheda (1.400 contro 1.300 kWh/kWp): il dato PVGIS è reale e
-   coincide con il calcolatore ufficiale PVGIS (1.417).
+   coincide con il calcolatore ufficiale PVGIS (1.417). Per questo l'impianto è stato ridotto da 80 a 70 kWp.
 2. **Il profilo delle famiglie di Besagni et al. 2020 non esiste nell'articolo**: la Figura 13 ("Load profiles
    of monitored households' clusters") è una copia della Figura 12 (probabilità d'uso dei microonde). Serve
-   un'altra fonte; finché manca, il calcolo della CER resta bloccato (serve solo dalla Fase 5).
+   un'altra fonte. Come in Mariuzzo et al. (2023), il profilo si può ricostruire "dal basso" dagli
+   elettrodomestici (dati di Nazemi et al. 2021 e Cruz et al. 2019): servono i due articoli. Finché manca,
+   il calcolo della CER resta bloccato (serve solo dalla Fase 5).
 
 ## 9. A che punto siamo
 

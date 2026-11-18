@@ -371,8 +371,7 @@ parameters:
     sensitivity: {low: 37.5, high: 62.5}
     source: "Proposed default, specification Sect. 3.5 (capped at |F| per hour)"
     source_type: assumption
-    status: to_verify
-    notes: "Generic range approved by Ema 18/11/2026 for assumptions without a range in the sheet: +/-25% (magnitudes), +/-1 h (clock times); shape of h_t explained to Ema 18/11/2026, default to confirm"
+    notes: "Generic range approved by Ema 18/11/2026 for assumptions without a range in the sheet: +/-25% (magnitudes), +/-1 h (clock times); default confirmed by Ema 18/11/2026"
     used_by: [model]
 
   - id: dock_outbound_start
@@ -383,8 +382,7 @@ parameters:
     sensitivity: {low: 6, high: 7}
     source: "Proposed default, specification Sect. 3.5 (outbound before the cut-off)"
     source_type: assumption
-    status: to_verify
-    notes: "Generic range approved by Ema 18/11/2026 for assumptions without a range in the sheet: +/-25% (magnitudes), +/-1 h (clock times); shape of h_t explained to Ema 18/11/2026, default to confirm"
+    notes: "Generic range approved by Ema 18/11/2026 for assumptions without a range in the sheet: +/-25% (magnitudes), +/-1 h (clock times); default confirmed by Ema 18/11/2026"
     used_by: [model]
 
   - id: dock_outbound_end
@@ -395,8 +393,7 @@ parameters:
     sensitivity: {low: 15, high: 17}
     source: "Proposed default, specification Sect. 3.5 (outbound before the cut-off)"
     source_type: assumption
-    status: to_verify
-    notes: "Generic range approved by Ema 18/11/2026 for assumptions without a range in the sheet: +/-25% (magnitudes), +/-1 h (clock times); shape of h_t explained to Ema 18/11/2026, default to confirm"
+    notes: "Generic range approved by Ema 18/11/2026 for assumptions without a range in the sheet: +/-25% (magnitudes), +/-1 h (clock times); default confirmed by Ema 18/11/2026"
     used_by: [model]
 
   - id: forklift_kwh_per_h
@@ -527,13 +524,13 @@ parameters:
   - id: pv_kwp
     group: pv
     description: Installed PV power
-    value: 80
+    value: 70
     unit: kWp
     sensitivity: {low: 40, high: 200}
-    source: "Ema's decision 17/11/2026: about 100 MWh/yr / 1,300 kWh/kWp, rounded"
+    source: "Resized by Ema 18/11/2026 with the PVGIS yield: about 100 MWh/yr / 1,401 kWh/kWp (PVGIS-SARAH3 typical year) = 71, rounded to 70 (sheet 17/11: 80 kWp from 1,300 kWh/kWp)"
     source_type: design_choice
     used_by: [model, data]
-    notes: "Typed 'derived' in the sheet, but the value is a rounded choice, not computed by code: recorded as design choice (confirmed by Ema 18/11/2026)."
+    notes: "A rounded choice, not computed by code: recorded as design choice."
 
   - id: pv_profile
     group: pv
@@ -859,7 +856,7 @@ parameters:
     value: null
     unit: kWh per hour
     sensitivity: ["-20%", "+20%"]
-    source: "Besagni, Premoli Vila, Borgarello (2020), Buildings 10(12) 217, doi:10.3390/buildings10120217: Figure 13 (p. 15) reproduces Figure 12 (microwave usage probability), so the load profile cannot be digitised; alternative to agree with Ema"
+    source: "Besagni et al. (2020) unusable (Fig. 13 duplicates Fig. 12). Candidate: bottom-up appliance profile as in Mariuzzo et al. (2023) IJEPES 153:109331, Sect. 4.2, from Nazemi et al. (2021) Buildings 11(6) 237 (appliances, preferred times) and Cruz et al. (2019) Sensors 19(18) 3973 (rated powers); papers requested from Ema"
     source_type: literature
     status: to_be_provided
     used_by: [rec]
@@ -1145,7 +1142,7 @@ parameters:
   - id: ext_plant_kwp
     group: economics
     description: Size of the other member's PV plant (condition C); same site and PVGIS profile as condition A
-    value: 80
+    value: 70
     unit: kWp
     sensitivity: {low: 40, high: 200}
     source: "Assumption (Ema 18/11/2026: 'ipotizza tu'): same size and profile as the warehouse plant of condition A, for comparability"
