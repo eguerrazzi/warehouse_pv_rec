@@ -17,3 +17,4 @@ Decisions taken with Ema during development that change or clarify the specifica
 | 2026-11-18 | Condition C external plant (Ema: hypothesise): 80 kWp, same site and PVGIS profile as condition A; range 40-200 kWp. | 1 |
 | 2026-11-18 | PV tilt = PVGIS optimal (confirmed); PV size 80 kWp as design_choice (confirmed); household profile = Besagni et al. 2020, digitised in Phase 2 (confirmed). | 1 |
 | 2026-11-18 | SBS/RS energy per mission source completed: Lerher, Ekren, Akpunar (2016), 14th IMHRC, Table 2 p. 10. | 1 |
+| 2026-11-18 | Sensitivity range of the gross energy per mission from Akpunar, Ekren, Lerher (2017) Table 2 (20.0-37.1 Wh), replacing the unverified 0.0197-0.0406 kWh of the sheet. N = 1,500 anchored also to Lupi et al. (2024) (1,529 missions/day). C unchanged (Lupi fixed times give 289/h, within range). | 1 |

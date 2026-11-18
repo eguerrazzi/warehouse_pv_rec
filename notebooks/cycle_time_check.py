@@ -89,3 +89,15 @@ print(
     f"Table 2 energy per UL: 75 kJ = {75 / 3.6:.1f} Wh gross, "
     f"net of recovery {(75 - 21) / 3.6:.1f} Wh"
 )
+
+# Variant: same geometry and kinematics, fixed handling times of a real industrial deep-lane
+# AVS/RS (Lupi et al. 2024, IJAMT 131:1449, Table 3): load/unload UL on satellite 7 s,
+# couple/uncouple satellite 5 s (instead of 2 s for every fixed activity in G2019 Table A3).
+fixed_g2019 = 4 * TF
+fixed_lupi = 7 + 5 + 7 + 5
+mean_ct = np.r_[ct_s, ct_p].mean()
+ct_lupi = mean_ct - fixed_g2019 + fixed_lupi
+print(
+    f"With Lupi et al. (2024) fixed times: {ct_lupi:.1f} s per mission -> "
+    f"C = {5 * 3600 / ct_lupi:.0f} missions/h with 5 concurrent tier shuttles"
+)

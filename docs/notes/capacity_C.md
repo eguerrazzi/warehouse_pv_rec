@@ -78,3 +78,9 @@ be read here. These sources are not used as parameter values.
   the M/M/1 cuts of V6 in Phase 3.
 
 Decision unchanged: C = 392 missions/h (5 concurrent tier shuttles), sensitivity on 1-5 concurrent shuttles.
+- **Lupi et al. (2024)**, IJAMT 131:1449-1466 — real tier-captive deep-lane AVS/RS (E80, beverage), 9 tiers,
+  3 lifts, 9 shuttles; 52,018 + 61,132 transactions in 74 working days (1,529/day, supports N = 1,500). Its fixed
+  handling times (Table 3: 7 s UL on/off satellite, 5 s couple/uncouple) are longer than the 2 s of G2019 Table A3:
+  with them the Cassioli mission time becomes 62.2 s and C = 289 missions/h (notebooks/cycle_time_check.py), inside
+  the sensitivity range. Average waiting times of 83-2,616 s per transaction (Tables 4-7) show that congestion is
+  material in real operation, which supports keeping the queue term in F2.
