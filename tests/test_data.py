@@ -159,4 +159,25 @@ def test_representative_days():
     assert 1300 < yield_ < 1500  # PVGIS-SARAH3 Torrita di Siena: about 1,400 kWh/kWp
     assert d.pv[:, :5].sum() == 0  # no PV before 05:00 local
     assert d.annual_business() == pytest.approx(3 * 20_000, rel=0.01)
-    assert d.household_working is None  # open input (Besagni Fig. 13 issue)
+    assert d.annual_households() == pytest.approx(50 * 2700, rel=1e-4)
+
+
+def test_household_bottom_up_annual_and_shape():
+    reg = load_registry()
+    cal = calendar.month_table(int(reg.value("calendar_year")))
+    df, rep = households.bottom_up(reg, cal)
+    per_day = df.set_index(["month", "day_type"]).sum(axis=1)
+    annual = sum(per_day.loc[(1, d)] * cal[f"{d}_days"].sum() for d in households.DAY_TYPES)
+    assert annual == pytest.approx(reg.value("household_kwh"))
+    assert (df.drop(columns=["month", "day_type"]).to_numpy() > 0).all()  # base load
+    # occupants away 08-17 on working days (Nazemi), at home on non-working days
+    assert rep["share_08_17"]["working"] < 0.1 < rep["share_08_17"]["non_working"]
+
+
+def test_household_spread_keeps_energy():
+    reg = load_registry()
+    a = households.appliance_days(reg)
+    reg.values["household_timing"] = "spread"
+    b = households.appliance_days(reg)
+    assert a["working"].sum() == pytest.approx(b["working"].sum())
+    assert b["working"].max() < a["working"].max()  # desynchronised starts flatten the peak

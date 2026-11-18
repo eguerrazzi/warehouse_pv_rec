@@ -90,8 +90,7 @@ def test_sanity_capacity_vs_average_load(base):
 
 def test_base_gates(base):
     base.gate("model")  # the LP inputs are all available
-    with pytest.raises(ProvenanceGateError, match="household_profile"):
-        base.gate("rec")
+    base.gate("rec")  # household profile available since 18/11/2026 (bottom-up)
     base.gate("economics")  # retail price (Eurostat), discount rate (ARERA), plant C (assumption)
 
 

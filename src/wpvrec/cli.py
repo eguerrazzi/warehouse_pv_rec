@@ -143,6 +143,15 @@ def _cmd_data(args: argparse.Namespace) -> int:
             f"Calendar {int(reg.value('calendar_year'))}: "
             f"{rep['calendar']['working_days']} working days"
         )
+        hh = rep["households"]
+        if "kwh_day" in hh:
+            print(
+                f"Households (bottom-up): {hh['kwh_day']['working']:.2f} kWh per working day, "
+                f"{hh['kwh_day']['non_working']:.2f} per non-working day; appliance energy "
+                f"x {hh['scale']:.2f} (unscaled {hh['unscaled_kwh_day']['working']:.1f} kWh/day); "
+                f"share 08-17: {100 * hh['share_08_17']['working']:.0f}% / "
+                f"{100 * hh['share_08_17']['non_working']:.0f}%"
+            )
     elif args.data_command == "sources":
         from wpvrec.data.common import write_sources_md
 
@@ -193,6 +202,10 @@ def _cmd_solve(args: argparse.Namespace) -> int:
     print(
         f"  fixed loads {inp.days[0].pf.sum():.1f} kWh per working day; site "
         f"{ann['working_day_kwh']:.1f} kWh per working day"
+    )
+    print(
+        f"  non-working days: stand-by uses {ann['self_consumed_non_working_kwh']:,.0f} kWh/yr "
+        f"of PV (constant, not in F1), exports {ann['export_non_working_kwh']:,.0f} kWh/yr"
     )
     print(
         f"  annual: PV {ann['pv_kwh'] / 1000:.1f} MWh, consumption "

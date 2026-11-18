@@ -5,7 +5,8 @@
 - ``verify``: maximum violation of every balance (energy, missions, SOC, stock, buffer, queue);
 - ``rounding_effect``: F1 and F2 with missions rounded to integers (spec Sect. 5);
 - ``annual_summary``: annual energy totals, including non-working days outside the LP
-  (stand-by load only, all PV exported, spec Sect. 4.1).
+  (stand-by load only; the stand-by uses the PV when there is sun, Ema 18/11/2026, which
+  replaces the spec's "all PV exported"; the rest is exported).
 """
 
 from __future__ import annotations
@@ -50,7 +51,8 @@ def plan_frame(m, inp: ModelInputs) -> pd.DataFrame:
                     "fixed": inp.days[d].pf[t - 1],
                     "missions_kwh": inp.e_net_kwh * v(m.ell[d, t]),
                     "charging_kwh": inp.p_ch * sum(v(m.q[d, f, t]) for f in m.F),
-                    "inbound": inp.days[d].u[t - 1],
+                    "inbound_arrived": inp.days[d].u[t - 1],
+                    "inbound": v(m.U[d, t]),
                     "picks": picks,
                     "prepicks": early,
                     "late_picks": picks if t > inp.cutoff else 0.0,
@@ -82,6 +84,11 @@ def verify(m, inp: ModelInputs) -> dict[str, float]:
         for d in m.D
         for g, grp in enumerate(inp.groups)
     ) if inp.groups else 0.0  # fmt: skip
+    out["inbound_done"] = max(
+        (abs(sum(v(m.ui[d, a, t]) for t in m.T if (d, a, t) in m.UI) - inp.days[d].u[a - 1])
+         for d in m.D for a in m.T if inp.days[d].u[a - 1] > 0),
+        default=0.0,
+    )  # fmt: skip
     out["internal_done"] = max(
         abs(sum(v(m.z[d, a, t]) for t in m.T) - n)
         for d in m.D
@@ -127,7 +134,13 @@ def rounding_effect(m, inp: ModelInputs) -> dict[str, float]:
     v = pyo.value
     f1 = f2_late = f2_queue = 0.0
     for d in m.D:
-        ell = np.array([inp.days[d].u[t - 1] for t in m.T], dtype=float)
+        ell = np.zeros(len(m.T))
+        for a in m.T:
+            ts = [t for t in m.T if (d, a, t) in m.UI]
+            if ts:
+                r = _round_preserving(np.array([v(m.ui[d, a, t]) for t in ts]))
+                for t, val in zip(ts, r, strict=True):
+                    ell[t - 1] += val
         late = 0.0
         for g, _ in enumerate(inp.groups):
             ts = [t for t in m.T if (d, g, t) in m.YI]
@@ -148,8 +161,14 @@ def rounding_effect(m, inp: ModelInputs) -> dict[str, float]:
     return {"F1": f1, "F2": f2_late + f2_queue, "F2_late": f2_late, "F2_queue": f2_queue}
 
 
+def nonworking_self_consumption(rep: RepresentativeDays, offshift_kw: float) -> float:
+    """PV used by the stand-by load on non-working days [kWh/yr], constant (no decisions)."""
+    per_day = np.minimum(rep.pv, offshift_kw).sum(axis=1)  # kWh per day, by month
+    return float((per_day * rep.non_working).sum())
+
+
 def annual_summary(plan: pd.DataFrame, rep: RepresentativeDays, offshift_kw: float) -> dict:
-    """Annual energy [kWh] on working days (LP) and non-working days (stand-by, PV exported)."""
+    """Annual energy [kWh]: working days (LP) and non-working days (stand-by only)."""
     w = plan["weight"]
     work_E = float((plan["E"] * w).sum())
     work_s = float((plan["s"] * w).sum())
@@ -157,15 +176,20 @@ def annual_summary(plan: pd.DataFrame, rep: RepresentativeDays, offshift_kw: flo
     nonwork_days = rep.non_working
     nonwork_E = float(nonwork_days.sum() * offshift_kw * HOURS_PER_DAY)
     nonwork_pv = float((rep.pv.sum(axis=1) * nonwork_days).sum())
+    nonwork_s = nonworking_self_consumption(rep, offshift_kw)
     pv = work_pv + nonwork_pv
     cons = work_E + nonwork_E
+    s = work_s + nonwork_s
     return {
         "pv_kwh": pv,
         "consumption_kwh": cons,
-        "self_consumed_kwh": work_s,
-        "export_kwh": pv - work_s,
-        "import_kwh": cons - work_s,
-        "self_consumption_pct": 100 * work_s / pv,
-        "self_sufficiency_pct": 100 * work_s / cons,
+        "self_consumed_kwh": s,
+        "self_consumed_working_kwh": work_s,
+        "self_consumed_non_working_kwh": nonwork_s,
+        "export_kwh": pv - s,
+        "export_non_working_kwh": nonwork_pv - nonwork_s,
+        "import_kwh": cons - s,
+        "self_consumption_pct": 100 * s / pv,
+        "self_sufficiency_pct": 100 * s / cons,
         "working_day_kwh": float((plan.groupby("day")["E"].sum()).mean()),
     }

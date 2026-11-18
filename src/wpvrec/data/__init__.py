@@ -7,7 +7,7 @@
 
 from __future__ import annotations
 
-from wpvrec.data import calendar, common, elmas, gme, pvgis
+from wpvrec.data import calendar, common, elmas, gme, households, pvgis
 from wpvrec.params import Registry
 
 SOURCES = ("pvgis", "gme", "elmas")
@@ -41,5 +41,6 @@ def process(reg: Registry) -> dict:
                     "patron-saint holiday not included"],
     )  # fmt: skip
     report["calendar"] = {"working_days": int(table["working_days"].sum())}
+    report["households"] = households.process(reg, table)
     common.write_sources_md()
     return report

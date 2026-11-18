@@ -17,6 +17,7 @@ import numpy as np
 import pandas as pd
 
 from wpvrec.data import calendar as cal
+from wpvrec.data import households
 from wpvrec.data.common import PROCESSED
 from wpvrec.params import Registry
 from wpvrec.units import KWH_PER_MWH
@@ -35,8 +36,8 @@ class RepresentativeDays:
     price_non_working: np.ndarray
     business_working: np.ndarray  # kWh, all small businesses together
     business_non_working: np.ndarray
-    household_working: np.ndarray | None  # kWh, all households; None until a profile exists
-    household_non_working: np.ndarray | None
+    household_working: np.ndarray  # kWh, all households together
+    household_non_working: np.ndarray
 
     @property
     def weights(self) -> np.ndarray:
@@ -49,6 +50,12 @@ class RepresentativeDays:
     def annual_pv(self) -> float:
         days = self.calendar["days"].to_numpy()
         return float((self.pv.sum(axis=1) * days).sum())
+
+    def annual_households(self) -> float:
+        return float(
+            (self.household_working.sum(axis=1) * self.weights).sum()
+            + (self.household_non_working.sum(axis=1) * self.non_working).sum()
+        )
 
     def annual_business(self) -> float:
         return float(
@@ -92,6 +99,9 @@ def build(reg: Registry, pv_variant: str = "typical") -> RepresentativeDays:
         bw += _by_type(s, "working") * annual_kwh
         bn += _by_type(s, "non_working") * annual_kwh
 
+    hh = households.profile(reg, calendar)
+    n_hh = v("n_households")
+
     return RepresentativeDays(
         year=year,
         calendar=calendar,
@@ -100,6 +110,6 @@ def build(reg: Registry, pv_variant: str = "typical") -> RepresentativeDays:
         price_non_working=_by_type(prices, "non_working"),
         business_working=bw,
         business_non_working=bn,
-        household_working=None,
-        household_non_working=None,
+        household_working=hh["working"] * n_hh,
+        household_non_working=hh["non_working"] * n_hh,
     )

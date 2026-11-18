@@ -128,6 +128,29 @@ def test_stock_never_below_minimum():
     assert balances.verify(m, inp)["all_ok"]
 
 
+def test_inbound_storage_moves_within_the_delay():
+    # 10 pallets arrive in slot 1; PV only in slot 2: with delay 1 storage follows the sun
+    u = np.array([10.0, 0, 0])
+    for delay, slot in ((1, 2), (0, 1)):
+        inp = tiny(3, pv=[0, 50, 0], e_net_kwh=1.0, inbound_delay=delay)
+        inp.days[0].u = u
+        m = lp.build_model(inp)
+        solve.solve(m, "max_F1")
+        stored = [pyo.value(m.U[0, t]) for t in (1, 2, 3)]
+        assert stored[slot - 1] == pytest.approx(10.0, abs=TOL)
+        assert sum(stored) == pytest.approx(10.0, abs=TOL)
+        assert balances.verify(m, inp)["all_ok"]
+
+
+def test_nonworking_standby_uses_pv():
+    class Rep:  # two months, one non-working day each
+        pv = np.array([[0.0, 1.0, 5.0], [3.0, 0.0, 0.0]])
+        non_working = np.array([1, 2])
+
+    # stand-by 2 kW: min(PV, 2) = 0 + 1 + 2 and 2 + 0 + 0 (x2 days)
+    assert balances.nonworking_self_consumption(Rep, 2.0) == pytest.approx(7.0)
+
+
 # ---- base case ----------------------------------------------------------------------------
 @pytest.mark.skipif(not (PROCESSED / "pv_typical_year.csv").exists(), reason="run wpvrec data")
 def test_base_case_balances_and_payoff_order():

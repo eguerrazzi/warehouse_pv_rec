@@ -1,7 +1,9 @@
 """Pyomo LP of specification Section 5 (approved model v2): constraints V1-V9, F1 and F2.
 
 One working day of T slots for each representative day d; the days are independent except
-through the annual objectives. All variables are continuous.
+through the annual objectives. All variables are continuous. V0 (inbound storage within
+``inbound_delay`` slots of the arrival, Ema 18/11/2026) is the spec's "within the following
+hour" for u_t.
 
     F1 = sum_d w_d sum_t s_dt                                        [kWh/yr], maximise
     F2 = sum_d w_d [ sum_g sum_{t>c} (t-c) y_dgt + sum_t W_dt ]      [missions*h/yr], minimise
@@ -34,6 +36,18 @@ def build_model(inp: ModelInputs) -> pyo.ConcreteModel:
     allowed = [(d, g, t) for d in m.D for g in m.G for t in T if t in shift and t >= grp[g].release]
     m.YI = pyo.Set(initialize=allowed)
     m.y = pyo.Var(m.YI, domain=pyo.NonNegativeReals)
+    # inbound storage: pallets arrived in slot a are stored in a slot a .. a + delay
+    # (within shifts; the arrival slot itself is always allowed)
+    stored = [
+        (d, a, t)
+        for d in m.D
+        for a in T
+        if inp.days[d].u[a - 1] > 0
+        for t in range(a, min(a + inp.inbound_delay, T[-1]) + 1)
+        if t in shift or t == a
+    ]
+    m.UI = pyo.Set(initialize=stored)
+    m.ui = pyo.Var(m.UI, domain=pyo.NonNegativeReals)
     m.z = pyo.Var(m.D, m.A, m.T, domain=pyo.NonNegativeReals)
     m.q = pyo.Var(m.D, m.F, m.T, bounds=(0, 1))
     m.o = pyo.Var(m.D, m.F, m.T, bounds=(0, 1))
@@ -53,6 +67,23 @@ def build_model(inp: ModelInputs) -> pyo.ConcreteModel:
 
     def picks(d, t):
         return sum(m.y[d, g, t] for g in m.G if (d, g, t) in m.YI)
+
+    by_store = {}
+    for d, a, t in stored:
+        by_store.setdefault((d, t), []).append(a)
+    m.U = pyo.Expression(
+        m.D, m.T, rule=lambda m, d, t: sum(m.ui[d, a, t] for a in by_store.get((d, t), []))
+    )
+
+    # V0 every inbound pallet stored within the allowed delay
+    arrived = sorted({(d, a) for d, a, _ in stored})
+    m.v0 = pyo.Constraint(
+        arrived,
+        rule=lambda m, d, a: (
+            sum(m.ui[d, a, t] for t in range(a, a + inp.inbound_delay + 1) if (d, a, t) in m.UI)
+            == inp.days[d].u[a - 1]
+        ),
+    )
 
     # V1 each order picked once, not before its release (index restriction above)
     m.v1 = pyo.Constraint(
@@ -98,7 +129,7 @@ def build_model(inp: ModelInputs) -> pyo.ConcreteModel:
         m.D,
         m.T,
         rule=lambda m, d, t: (
-            m.ell[d, t] == inp.days[d].u[t - 1] + picks(d, t) + sum(m.z[d, a, t] for a in m.A)
+            m.ell[d, t] == m.U[d, t] + picks(d, t) + sum(m.z[d, a, t] for a in m.A)
         ),
     )
 

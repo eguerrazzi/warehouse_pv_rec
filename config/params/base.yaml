@@ -713,6 +713,16 @@ parameters:
     source_type: design_choice
     used_by: [model]
 
+  - id: inbound_storage_delay
+    group: orders
+    description: Slots after its arrival in which an inbound pallet may still be stored (decided by the LP)
+    value: 1
+    unit: h
+    sensitivity: [0, 1, 2]
+    source: "Specification Sect. 5.2 ('to be done within the following hour'); read literally by Ema's decision 18/11/2026 (arrival slot or the next one); 0 = same slot (Phase 3 first build)"
+    source_type: design_choice
+    used_by: [model]
+
   - id: inbound_start
     group: orders
     description: Start of inbound arrivals u_t (uniform)
@@ -861,14 +871,77 @@ parameters:
 
   - id: household_profile
     group: rec
-    description: Hourly household load profile
-    value: null
-    unit: kWh per hour
+    description: "Hourly household load profile: 'bottom_up' (appliance table) or the path of a CSV of shares (layouts of data/households.py)"
+    value: bottom_up
+    unit: "-"
     sensitivity: ["-20%", "+20%"]
-    source: "Besagni et al. (2020) unusable (Fig. 13 duplicates Fig. 12). Candidate: bottom-up appliance profile as in Mariuzzo et al. (2023) IJEPES 153:109331, Sect. 4.2, from Nazemi et al. (2021) Buildings 11(6) 237 (appliances, preferred times) and Cruz et al. (2019) Sensors 19(18) 3973 (rated powers); papers requested from Ema"
-    source_type: literature
-    status: to_be_provided
-    used_by: [rec]
+    source: "Ema's decision 18/11/2026, approach of Mariuzzo et al. (2023) IJEPES 153:109331, Sect. 4.2: appliances and times from Nazemi et al. (2021) Buildings 11(6) 237, Table 1; rated powers from Cruz et al. (2019) Sensors 19(18) 3973, Table 2 (data/manual/household_appliances.csv, source per row); base load (fridge, stand-by) added; appliance energy scaled so that the year gives household_kwh; EV charging, HVAC and electric water heater of Nazemi et al. (2021) excluded (US setting). Besagni et al. (2020) unusable (Fig. 13 duplicates Fig. 12)"
+    source_type: design_choice
+    used_by: [rec, data]
+
+  - id: household_power_source
+    group: rec
+    description: Rated powers of the appliances (cruz = Cruz et al. 2019 Table 2, nazemi = Nazemi et al. 2021 Table 1)
+    value: cruz
+    unit: "-"
+    sensitivity: [nazemi]
+    source: "Ema's decision 18/11/2026 (powers adjusted with Cruz et al. 2019, as in Mariuzzo et al. 2023); phone charger keeps the Nazemi power (not in Cruz Table 2)"
+    source_type: design_choice
+    used_by: [rec, data]
+
+  - id: household_timing
+    group: rec
+    description: "Start times on working days: preferred (Nazemi 'user preferred time', all households together) or spread (start uniform over Nazemi's operation range)"
+    value: preferred
+    unit: "-"
+    sensitivity: [spread]
+    source: "Nazemi et al. (2021) Table 1, columns 'User Preferred Time' and 'The Operation Range'; spread = desynchronised households (sensitivity, 18/11/2026)"
+    source_type: design_choice
+    used_by: [rec, data]
+
+  - id: household_fridge_kwh
+    group: rec
+    description: Annual consumption of the household fridge-freezer (flat base load)
+    value: 322
+    unit: kWh/yr
+    sensitivity: {low: 268, high: 478}
+    source: "Cruz et al. (2019) Table 2 AP17 is a Bosch KDN46VI20 (500 W rated; its 8.77-10 kWh/day is not usable); the label value of that model was not found: Bosch sibling KDN46VL2E8, spec sheet (media3.bosch-home.com/Documents/specsheet/en-EG/KDN46VL2E8.pdf), 322 kWh/annum. Range: KDN46AW32N fiche 268 kWh/yr (A++), KDN46NW20N 478 kWh/yr (web search 18/11/2026)"
+    source_type: estimate
+    status: to_verify
+    used_by: [rec, data]
+
+  - id: household_nonworking_start
+    group: rec
+    description: "Non-working days, households at home: start of the window in which chores (washer, dryer, dishwasher, iron, vacuum) begin, uniformly"
+    value: 9
+    unit: "h (clock)"
+    sensitivity: {low: 8, high: 10}
+    source: "Assumption (Ema 18/11/2026: households at home all day on non-working days; Nazemi et al. 2021 has no non-working day)"
+    source_type: assumption
+    notes: "Generic range +/-1 h on clock times (Ema 18/11/2026). Other appliances keep their working-day times."
+    used_by: [rec, data]
+
+  - id: household_nonworking_end
+    group: rec
+    description: Non-working days, end of the window of the chores (the cycle ends by this hour)
+    value: 19
+    unit: "h (clock)"
+    sensitivity: {low: 18, high: 20}
+    source: "Assumption (Ema 18/11/2026, see household_nonworking_start)"
+    source_type: assumption
+    notes: "Generic range +/-1 h on clock times (Ema 18/11/2026)"
+    used_by: [rec, data]
+
+  - id: household_lunch_start
+    group: rec
+    description: Non-working days, start of one more electric stove use at lunch (Nazemi duration, 40 min)
+    value: 12.5
+    unit: "h (clock)"
+    sensitivity: {low: 11.5, high: 13.5}
+    source: "Assumption (Ema 18/11/2026: households at home on non-working days); duration and power of the stove from data/manual/household_appliances.csv"
+    source_type: assumption
+    notes: "Generic range +/-1 h on clock times (Ema 18/11/2026)"
+    used_by: [rec, data]
 
   - id: household_kwh
     group: rec
@@ -876,7 +949,7 @@ parameters:
     value: 2700
     unit: kWh/yr
     sensitivity: {low: 2000, high: 3500}
-    source: "ARERA typical domestic customer (2,700 kWh/yr, 3 kW)"
+    source: "ARERA 'cliente medio' (resident, 3 kW, 2,700 kWh/yr), press releases on the quarterly update of the vulnerable-customer conditions (e.g. Q1 2025 and Q1 2026, arera.it); the vulnerable reference customer is 2,000 kWh/yr (within the range)"
     source_type: real
     used_by: [rec]
 
@@ -1302,6 +1375,7 @@ consistency:
   - "shift_start < cutoff_hour <= shift_end"
   - "stock_min_days <= stock_initial_days"
   - "inbound_start >= shift_start and inbound_end <= shift_end"
+  - "household_nonworking_start < household_nonworking_end <= HOURS_PER_DAY"
   - "shift_start <= order_arrival_start < order_arrival_end <= cutoff_hour"
   - "shift_start < p0_morning_end <= p0_evening_start < shift_end"
   - "shift_start <= p1_sun_start < p1_sun_end <= shift_end"

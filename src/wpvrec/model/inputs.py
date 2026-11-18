@@ -38,7 +38,7 @@ class Group:
 @dataclass
 class DayInputs:
     pv: np.ndarray  # kWh produced in each slot
-    u: np.ndarray  # inbound storage missions in each slot (fixed)
+    u: np.ndarray  # inbound pallets arriving in each slot (fixed; stored within inbound_delay)
     h: np.ndarray  # dock workload, forklift-hours in each slot
     pf: np.ndarray  # fixed loads, kWh in each slot
     chi: np.ndarray  # 1 if charging is allowed in the slot
@@ -68,6 +68,7 @@ class ModelInputs:
     soc_min: float  # fraction of q_cap
     p_ch: float  # charger power, kW
     eta: float  # charging efficiency
+    inbound_delay: int = 0  # slots after arrival in which inbound pallets may still be stored
     labels: list[str] = field(default_factory=list)  # names of the days (months)
 
     @property
@@ -187,5 +188,6 @@ def build(reg: Registry, rep: RepresentativeDays, elmas=None) -> ModelInputs:
         soc_min=v("soc_min") / PERCENT,
         p_ch=v("charger_kw"),
         eta=v("charge_efficiency"),
+        inbound_delay=int(v("inbound_storage_delay")),
         labels=[f"m{m + 1:02d}" for m in range(len(rep.pv))],
     )

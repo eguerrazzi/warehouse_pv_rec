@@ -16,6 +16,7 @@ from matplotlib.colors import LinearSegmentedColormap  # noqa: E402
 
 from wpvrec import days as days_mod  # noqa: E402
 from wpvrec.figures.schematics import (  # noqa: E402
+    AQUA,
     BLUE,
     INK,
     INK2,
@@ -140,7 +141,42 @@ def working_day(reg: Registry, d):
     return fig
 
 
-FIGURES = {"pv_heatmap": pv_heatmap, "price_heatmap": price_heatmap, "working_day": working_day}
+def rec_members(reg: Registry, d):
+    v = reg.value
+    hours = np.arange(24) + 0.5
+    fig, axes = plt.subplots(1, 2, figsize=(10, 3.6), sharey=True)
+    series = (
+        ("working", "Working day", d.household_working, d.business_working),
+        ("non_working", "Non-working day", d.household_non_working, d.business_non_working),
+    )
+    for ax, (_, title, hh, bu) in zip(axes, series, strict=True):
+        ax.plot(hours, d.pv[6], color=YELLOW, lw=2.2, label="PV, July")
+        ax.plot(hours, d.pv[0], color=YELLOW, lw=1.6, ls="--", label="PV, January")
+        ax.plot(hours, hh.mean(axis=0), color=VIOLET, lw=2,
+                label=f"{int(v('n_households'))} households")  # fmt: skip
+        ax.plot(hours, bu[6], color=AQUA, lw=2,
+                label=f"{int(v('n_businesses'))} small businesses (July)")  # fmt: skip
+        ax.set_title(title, loc="left", fontsize=10, color=INK)
+        ax.set_xlim(0, 24)
+        ax.set_xticks(range(0, 25, 3), [f"{h:02d}" for h in range(0, 25, 3)])
+        ax.set_xlabel("local clock hour")
+        ax.grid(axis="y", color=LINE, lw=0.5)
+    axes[0].set_ylabel("kWh in the hour")
+    axes[1].legend(frameon=False, loc="upper right", fontsize=8)
+    fig.text(0.01, -0.04, "PV of the warehouse (PVGIS typical year, real); households: bottom-up "
+             "profile (Nazemi 2021, Cruz 2019, scaled to ARERA 2,700 kWh/yr); businesses: ELMAS "
+             "(real). On working days most PV is used by the warehouse itself.",
+             fontsize=7, color=MUTED)  # fmt: skip
+    fig.tight_layout()
+    return fig
+
+
+FIGURES = {
+    "pv_heatmap": pv_heatmap,
+    "price_heatmap": price_heatmap,
+    "working_day": working_day,
+    "rec_members": rec_members,
+}
 
 
 def make_all(out_dir: Path = OUT_DIR, registry: Registry | None = None) -> list[Path]:

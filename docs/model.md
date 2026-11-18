@@ -29,10 +29,14 @@ predictable part (share $\sigma$) with $r_g = \max(a_g - H, 7)$ and a non-predic
 
 $y_{g,t} \ge 0$ picks; $z_{a,t} \ge 0$ internal missions; $q_{f,t}, o_{f,t} \in [0,1]$ charging and dock
 fractions of the hour; $SOC_{f,t}$ battery energy; $S_t$ picking-area stock; $B_t$ pre-picked buffer;
-$\ell_t$ AVS/RS missions; $W_t \ge 0$ waiting; $E_t$ site energy; $s_t, g_t, x_t \ge 0$ PV self-consumed,
+$\ell_t$ AVS/RS missions; $v_{\tau,t} \ge 0$ inbound pallets arrived in slot $\tau$ and stored in slot $t$; $W_t \ge 0$ waiting; $E_t$ site energy; $s_t, g_t, x_t \ge 0$ PV self-consumed,
 grid import, PV export.
 
 ## Constraints
+
+**V0** $\sum_{t=\tau}^{\tau+\Delta} v_{\tau,t} = u_\tau$ for every arrival slot $\tau$, with $t$ within shifts (the arrival slot
+is always allowed); $\Delta$ = `inbound_storage_delay` (1: "within the following hour", Ema 18/11/2026; 0 gives
+the first Phase 3 build). $U_t = \sum_\tau v_{\tau,t}$.
 
 **V1** $\sum_t y_{g,t} = n_g$, with $y_{g,t} = 0$ for $t < r_g$ or $t \notin \mathcal{T}^{s}$ (implemented by
 creating $y_{g,t}$ only on the allowed slots).
@@ -43,7 +47,7 @@ creating $y_{g,t}$ only on the allowed slots).
 
 **V4** $B_t = \sum_{g: a_g > t} \sum_{t' \le t} y_{g,t'} \le \bar B$ (actual arrival slot $a_g$).
 
-**V5** $\ell_t = u_t + \sum_g y_{g,t} + \sum_a z_{a,t} \le \bar\rho\, C$.
+**V5** $\ell_t = U_t + \sum_g y_{g,t} + \sum_a z_{a,t} \le \bar\rho\, C$.
 
 **V6** $W_t \ge a_l \ell_t + b_l\ \ \forall l$, $W_t \ge 0$. With $\rho = \ell/C$, the M/M/1 waiting accumulated
 in one hour is $L_q = \rho^2/(1-\rho)$ missions·h. The cuts are the secants between breakpoints
@@ -69,17 +73,17 @@ optimum within a relative tolerance (registry `lexicographic_tolerance`).
 
 ## Implementation notes and points for review
 
-- **Inbound** $u_t$: storage missions done in the slot of arrival (the spec's "within the following hour" is
-  read as "in the same hourly slot"); fixed input.
+- **Inbound** $u_t$: pallets arriving in slot $t$ (fixed input); their storage $U_t$ is decided by V0, in the
+  arrival slot or the next one. The dock workload $h_t$ follows the arrivals $u_t$ (unloading), not the storage.
 - **Dock workload** $h_t$: `dock_share_inbound` (50%) proportional to $u_t$, the rest uniform over 06–16;
   the build fails if $h_t > |F|$ in some hour.
 - **Fixed loads** $P^f_t$: flat in shifts (14.5 kW) and 2 kW outside, 248 kWh per working day; option ELMAS
   cluster shape with the same daily energy.
-- **Non-working days** (outside the LP, spec Sect. 4.1): stand-by 2 kW, all PV exported. *For review:* if the
-  stand-by load used PV in daylight, self-consumption on non-working days would be about 2.6 MWh/yr (of 30.4 MWh
-  produced on those days); the spec's rule is kept until Ema decides.
+- **Non-working days** (outside the LP, spec Sect. 4.1, changed by Ema 18/11/2026): stand-by 2 kW, which uses the
+  PV when there is sun, $\sum_t \min(PV_t, P^{sb})$: 2.6 MWh/yr of the 30.4 MWh produced on those days; the rest
+  is exported. It is a constant: it enters the annual totals, not $F_1$ (which keeps the working days only).
 - **Rounding**: missions are continuous; `balances.rounding_effect` recomputes F1 and F2 with integer missions per
-  slot (base case: F1 +9 kWh/yr, F2 +14 missions·h/yr at min F2).
+  slot (base case: F1 +4 kWh/yr, F2 +11 missions·h/yr at min F2).
 
 ## REC evaluation (Phase 5)
 

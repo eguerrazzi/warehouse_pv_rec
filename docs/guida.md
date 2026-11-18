@@ -22,7 +22,9 @@ I numeri nei cerchi rimandano alla legenda sotto la figura. Lo schema dei flussi
 
 - Una PMI logistica a **Torrita di Siena** con un magazzino automatico per pallet, ispirato
   all'impianto Cassioli del tuo articolo del 2019: 5 piani, 2 elevatori (uno per l'ingresso, uno per l'uscita),
-  uno shuttle con satellite per piano.
+  uno shuttle con satellite per piano. Disposizione **a U**: i due elevatori stanno sullo stesso lato, davanti
+  c'è l'area picking e le baie di ingresso (IN) e di uscita (OUT) sono sulla stessa parete, servite dagli stessi
+  4 carrelli (come nel modello). Il modello non tiene conto delle distanze: la disposizione è solo illustrativa.
 - **1.500 missioni al giorno** del magazzino automatico, 2 turni (06–22), dal lunedì al venerdì.
 - **4 carrelli elevatori al litio** servono le baie di carico; si ricaricano a 8 kW.
 - **Carichi fissi**: illuminazione, uffici, porte, compressore… (14,5 kW in turno, 2 kW fuori turno).
@@ -108,7 +110,7 @@ Se un dato manca, lo strumento **si rifiuta di partire** e dice che cosa serve.
 | Produzione PV | PVGIS (JRC), 2005–2023 | profilo medio ora per ora di ogni mese: **1.401 kWh/kWp all'anno**, cioè **98 MWh** per 70 kWp |
 | Prezzi zonali | GME, zona Centro-Nord, 2025 | prezzo medio ora per ora, separato per giorni lavorativi e festivi: media **117 €/MWh** |
 | Consumi di bar, negozio e ufficio | ELMAS (dati francesi 2018, CC BY) | forma oraria di ciascuno, scalata a 20 MWh/anno |
-| Consumi delle famiglie | **mancante** (vedi sotto) | — |
+| Consumi delle famiglie | ricostruiti "dal basso" dagli elettrodomestici (Nazemi 2021, Cruz 2019), scalati ad ARERA | **7,1 kWh** in un giorno lavorativo, **8,1** in un festivo; 2.700 kWh/anno a famiglia |
 | Calendario | festività nazionali 2025 | **251 giorni lavorativi** |
 
 ![Produzione PV](figures/pv_heatmap.png)
@@ -117,17 +119,35 @@ Se un dato manca, lo strumento **si rifiuta di partire** e dice che cosa serve.
 
 **I 12 giorni rappresentativi.** Invece di simulare 365 giorni, il modello usa **un giorno lavorativo
 tipo per ogni mese**, pesato con il numero di giorni lavorativi di quel mese (gennaio vale 21, luglio 23…).
-Sabati, domeniche e festivi non hanno decisioni: il magazzino consuma solo lo stand-by e tutta l'energia
-solare va in rete; vengono contati a parte nei totali annui e nella CER.
+Sabati, domeniche e festivi non hanno decisioni: il magazzino consuma solo lo stand-by (2 kW), che usa il
+solare quando c'è (circa 2,6 MWh/anno, decisione del 18/11); il resto va in rete. Vengono contati a parte nei
+totali annui e nella CER.
 
 **Due cose da sapere:**
 1. Il PV produce più di quanto previsto dalla scheda (1.400 contro 1.300 kWh/kWp): il dato PVGIS è reale e
    coincide con il calcolatore ufficiale PVGIS (1.417). Per questo l'impianto è stato ridotto da 80 a 70 kWp.
-2. **Il profilo delle famiglie di Besagni et al. 2020 non esiste nell'articolo**: la Figura 13 ("Load profiles
-   of monitored households' clusters") è una copia della Figura 12 (probabilità d'uso dei microonde). Serve
-   un'altra fonte. Come in Mariuzzo et al. (2023), il profilo si può ricostruire "dal basso" dagli
-   elettrodomestici (dati di Nazemi et al. 2021 e Cruz et al. 2019): servono i due articoli. Finché manca,
-   il calcolo della CER resta bloccato (serve solo dalla Fase 5).
+2. **Il profilo delle famiglie** (Besagni 2020 non era utilizzabile: la sua Figura 13 è una copia della 12) è
+   ricostruito "dal basso", come in Mariuzzo et al. (2023):
+   - **quali elettrodomestici e a che ora**: Nazemi et al. (2021), Tabella 1 (lavatrice, asciugatrice,
+     lavastoviglie, forno, bollitore…). Le famiglie sono fuori casa dalle 8 alle 16;
+   - **quanta potenza**: Cruz et al. (2019), Tabella 2 (modelli europei);
+   - **carico di base**: frigorifero (322 kWh/anno, da verificare) e stand-by, sempre acceso;
+   - **quanta energia in un anno**: 2.700 kWh, il "cliente medio" ARERA. Gli elettrodomestici di Nazemi
+     darebbero circa 20 kWh al giorno, quasi 3 volte tanto; li riduciamo tutti dello stesso fattore (0,31),
+     come se ogni elettrodomestico si usasse circa un giorno su tre;
+   - **festivi** (ipotesi nostra): le famiglie sono in casa, i lavori domestici (bucato, lavastoviglie, ferro,
+     aspirapolvere) partono a caso fra le 9 e le 19 e si cucina anche a pranzo;
+   - esclusi auto elettrica, condizionatore e scaldabagno elettrico, perché riflettono il contesto USA.
+
+   La tabella con la fonte di ogni riga è in `data/manual/household_appliances.csv`.
+
+![Consumi dei membri della CER e produzione del magazzino](figures/rec_members.png)
+
+Nei giorni lavorativi le famiglie consumano soprattutto la sera, quando il sole non c'è più. Nei festivi
+consumano anche di giorno, proprio quando il magazzino, fermo, cede quasi tutto il suo solare: per la CER sono i
+giorni che contano di più. Il picco delle 18–19 (116 kWh) è esagerato perché tutte le 50 famiglie accendono
+tutto alla stessa ora; con l'opzione `household_timing: spread` ognuna parte in un momento a caso dentro la
+finestra di Nazemi.
 
 ## 9. Il modello risolto: primi risultati (Fase 3)
 
@@ -139,20 +159,33 @@ missioni fatte, batterie dei carrelli mai sotto il 20%, area picking mai sotto l
 
 | | Miglior servizio (min F2) | Massimo solare usato (max F1) |
 |---|---|---|
-| F1, solare autoconsumato | 57.912 kWh/anno | 58.103 kWh/anno |
-| F2, produttività persa | 785 missioni·h/anno (solo coda, zero ritardi) | 1.055 missioni·h/anno |
+| F1, solare autoconsumato (giorni lavorativi) | 58.091 kWh/anno | 58.309 kWh/anno |
+| F2, produttività persa | 785 missioni·h/anno (solo coda, zero ritardi) | 1.126 missioni·h/anno |
 
 **Cosa vuol dire, in parole semplici.**
-- Il magazzino consuma **95 MWh/anno** e il fotovoltaico da 70 kWp ne produce **98**: il 59% del solare viene
-  usato in casa e copre il 61% dei consumi.
+- Il magazzino consuma **95 MWh/anno** e il fotovoltaico da 70 kWp ne produce **98**: il 62% del solare viene
+  usato in casa (compresi 2,6 MWh di stand-by nei festivi) e copre il 64% dei consumi.
+- I pallet in arrivo si possono stoccare **nell'ora di arrivo o in quella dopo**: lo decide il modello (18/11).
 - La **ricarica dei carrelli** (la parte verde) è il grande carico spostabile e il modello la mette nelle ore di sole
   *anche quando pensa solo al servizio*, perché spostarla non crea code né ritardi.
 - Le **missioni del magazzino automatico** (la striscia blu) consumano pochissimo: circa 15 Wh l'una, 22 kWh al
-  giorno in tutto. Spostarle verso il sole fa guadagnare solo **circa 190 kWh/anno** (0,3%) e costa il 34% di coda
+  giorno in tutto. Spostarle verso il sole fa guadagnare solo **circa 220 kWh/anno** (0,4%) e costa il 43% di coda
   in più.
 - Quindi, nel caso base, **il compromesso fra solare e produttività esiste ma è piccolo**. È già una risposta
-  alla prima domanda del paper; l'analisi di sensitività (Fase 6) mostrerà quando diventa importante: più missioni,
-  sistemi meno efficienti, capacità minore.
+  alla prima domanda del paper. Una prova rapida, cambiando una cosa alla volta, mostra quando cresce:
+
+  | Caso | Solare guadagnato (max F1 − min F2) | Produttività persa: da … a … |
+  |---|---|---|
+  | base | 218 kWh/anno | 785 → 1.126 |
+  | energia per missione al massimo (134 kJ) | 204 | 785 → 915 |
+  | missioni raddoppiate (3.000/giorno) | 1.090 | 3.810 → 7.715 |
+  | capacità più bassa (289/h, come Lupi) | 721 | 1.163 → 2.410 |
+  | tutte e tre insieme | 664 | 33.449 → 41.534 (con ritardi) |
+
+  Il guadagno resta sempre sotto 1,1 MWh/anno (meno del 2%) per due motivi: le missioni consumano poco
+  (5,6 MWh/anno in tutto, di cui solo 1,5 presi dalla rete) e d'inverno il solare non basta mai, quindi non c'è
+  niente da spostare. Il compromesso si allarga quando il magazzino lavora di più o è più lento, ma lo fa
+  soprattutto sul lato del servizio.
 - Il **pre-picking** possibile è di 97,5 prelievi al giorno (non 195): gli ordini arrivati la sera prima sono già
   disponibili alle 6 e non si possono anticipare. Il modello ne anticipa in media 37 al giorno.
 
@@ -167,8 +200,8 @@ capacità. Il modello lineare la approssima con 4 segmenti (linea tratteggiata),
 |---|---|---|
 | 0 | Struttura del progetto, ambiente, test automatici | fatta |
 | 1 | Registro dei parametri con fonti, controllo di provenienza | fatta |
-| 2 | Dati: PV, prezzi, consumi, calendario, giorni rappresentativi | fatta (manca il profilo delle famiglie) |
-| 3 | Il modello LP con i vincoli V1–V9 | fatta |
+| 2 | Dati: PV, prezzi, consumi, calendario, giorni rappresentativi | fatta |
+| 3 | Il modello LP con i vincoli V0–V9 | fatta (decisioni del 18/11 incluse) |
 | 4 | Frontiera di Pareto, prezzi ombra, politiche P0/P1 | da fare |
 | 5 | CER ed economia (condizioni B e C) | da fare |
 | 6 | Scenari di sensitività, cluster SLURM | da fare |

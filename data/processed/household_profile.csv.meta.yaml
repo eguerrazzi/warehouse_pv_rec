@@ -1,0 +1,16 @@
+source: Bottom-up from Nazemi et al. (2021) Buildings 11(6) 237, Table 1 (appliances, times, durations)
+  and Cruz et al. (2019) Sensors 19(18) 3973, Table 2 (rated powers, stand-by), as in Mariuzzo et al.
+  (2023) IJEPES 153:109331
+url: data/manual/household_appliances.csv
+licence: values transcribed from CC BY 4.0 papers (MDPI)
+retrieved: '2026-11-18'
+source_type: derived
+processing:
+- power source cruz, timing preferred, minute resolution, hourly slots (local time)
+- 'non-working days: chores uniform 9-19 h, extra stove use at 12.5 h'
+- base load 1.094 kWh/day (fridge 322 kWh/yr + stand-by), not scaled
+- appliance energy x 0.315 so that the calendar year gives 2700 kWh
+- same profile in every month (no seasonal data in the sources)
+file: household_profile.csv
+processed: '2026-11-18'
+sha256: 54283a079af0eb05c79ef5b428b9e50ad21927f33c95e26e921460d247bd642f
