@@ -17,8 +17,12 @@ _PYOMO_NAMES = {
 }
 
 
-def get_solver(name: str = "highs"):
-    """Return a Pyomo solver object for ``name`` ("highs", "gurobi" or "cplex")."""
+def get_solver(name: str = "highs", threads: int | None = None):
+    """Return a Pyomo solver object for ``name`` ("highs", "gurobi" or "cplex").
+
+    ``threads`` limits the solver threads (registry ``solver_threads``); HiGHS otherwise
+    starts one thread per two cores, too many on a shared head node.
+    """
     try:
         plugin = _PYOMO_NAMES[name]
     except KeyError as err:
@@ -26,6 +30,11 @@ def get_solver(name: str = "highs"):
     solver = pyo.SolverFactory(plugin)
     if not solver.available(exception_flag=False):
         raise RuntimeError(f"Solver {name!r} (Pyomo plugin {plugin!r}) is not available")
+    if threads is not None:
+        if name == "highs":
+            solver.highs_options["threads"] = int(threads)
+        else:
+            solver.options["threads"] = int(threads)
     return solver
 
 

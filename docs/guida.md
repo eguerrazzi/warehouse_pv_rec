@@ -194,7 +194,39 @@ missioni fatte, batterie dei carrelli mai sotto il 20%, area picking mai sotto l
 La curva nera è la formula classica della coda (M/M/1): l'attesa esplode quando il magazzino si avvicina alla
 capacità. Il modello lineare la approssima con 4 segmenti (linea tratteggiata), esatti nei punti blu.
 
-## 10. A che punto siamo
+## 10. La frontiera di Pareto e le politiche (Fase 4)
+
+Il comando `wpvrec front` costruisce la **frontiera di Pareto**: 25 piani, ognuno il migliore possibile per un
+certo livello di solare usato. Poi la confronta con due regole semplici:
+- **P0, pratica attuale** (ipotesi): lavori interni a inizio e fine turno (06–08, 20–22), carrelli in carica a
+  fine turno, nessun pre-picking;
+- **P1, segui il sole**: tutto il lavoro spostabile (e la ricarica) fra le 11 e le 15, se c'è posto.
+
+![La frontiera e le politiche](figures/pareto_front.png)
+
+| | Solare usato (giorni lavorativi) | Produttività persa | Costo energia (stima) |
+|---|---|---|---|
+| P0 pratica attuale | 37,9 MWh/anno | 785 missioni·h | 13.600 €/anno |
+| P1 segui il sole | 55,4 MWh/anno | 785 | 9.200 €/anno |
+| **Ottimo, stesso servizio di P0** | **58,1 MWh/anno** | **785** | **8.600 €/anno** |
+| Ginocchio della frontiera | 58,2 MWh/anno | 879 | 8.550 €/anno |
+| Massimo solare | 58,3 MWh/anno | 1.125 | 8.530 €/anno |
+
+**Cosa vuol dire.**
+- **Il risultato principale: a parità di servizio, il piano ottimo usa 20 MWh/anno di solare in più della pratica
+  attuale (+53%)** e risparmia circa 5.000 €/anno di energia comprata (al prezzo Eurostat 2025). Quasi tutto il
+  guadagno viene dal **mettere in carica i carrelli quando c'è il sole** invece che a fine turno, e non costa
+  nulla in produttività.
+- "Seguire il sole" con una regola semplice (P1) prende gran parte di questo guadagno; l'ottimizzazione aggiunge
+  ancora 2,7 MWh/anno.
+- Oltre il punto di miglior servizio, ogni kWh in più si paga caro: da 0,6 a 8,7 missioni·h di attesa per kWh
+  (grafico a destra, il "costo in ritardo di un kWh"). Per questo la frontiera è corta (+218 kWh/anno).
+- La regola P0 non è nemmeno del tutto fattibile: 2 ore di carica la sera non bastano, e il 26% della ricarica
+  (5,8 MWh/anno) deve "sforare" nelle ore subito prima. Il modello lo segnala.
+
+![Un giorno di luglio: pratica attuale e ottimo con lo stesso servizio](figures/plan_p0_vs_optimum.png)
+
+## 11. A che punto siamo
 
 | Fase | Contenuto | Stato |
 |---|---|---|
@@ -202,13 +234,13 @@ capacità. Il modello lineare la approssima con 4 segmenti (linea tratteggiata),
 | 1 | Registro dei parametri con fonti, controllo di provenienza | fatta |
 | 2 | Dati: PV, prezzi, consumi, calendario, giorni rappresentativi | fatta |
 | 3 | Il modello LP con i vincoli V0–V9 | fatta (decisioni del 18/11 incluse) |
-| 4 | Frontiera di Pareto, prezzi ombra, politiche P0/P1 | da fare |
+| 4 | Frontiera di Pareto, prezzi ombra, politiche P0/P1 | fatta (in attesa del tuo ok) |
 | 5 | CER ed economia (condizioni B e C) | da fare |
 | 6 | Scenari di sensitività, cluster SLURM | da fare |
 | 7 | Dashboard interattiva | da fare |
 | 8 | Documentazione finale, riproducibilità | da fare |
 
-## 11. Piccolo glossario
+## 12. Piccolo glossario
 
 - **AVS/RS**: magazzino automatico con veicoli autonomi; qui elevatori, shuttle e satelliti.
 - **Shuttle e satellite**: lo shuttle corre lungo il corridoio del piano, il satellite entra nel canale profondo a
@@ -222,7 +254,7 @@ capacità. Il modello lineare la approssima con 4 segmenti (linea tratteggiata),
 - **Prezzo ombra**: quanto peggiora F2 se chiedo 1 kWh in più di F1.
 - **TIP**: tariffa incentivante premio della CER (DM 414/2023).
 
-## 12. Comandi utili
+## 13. Comandi utili
 
 ```bash
 conda activate wpvrec
@@ -233,5 +265,10 @@ wpvrec data process             # produce i profili e stampa i controlli
 wpvrec figures                  # rigenera tutte le figure di docs/figures
 wpvrec solve                    # risolve il modello (min F2) e controlla i bilanci
 wpvrec solve --objective max_F1 # risolve massimizzando il solare autoconsumato
+wpvrec front                    # frontiera di Pareto, P0/P1, figure (circa 15 s); risultati in results/base
 pytest                          # esegue i test
 ```
+
+Nota sul server: sul nodo di accesso (serics1) il servizio `slurm-guardian` termina i processi
+`python script.py` lanciati fuori da SLURM. I comandi `wpvrec` e `pytest` sono brevi e usano un solo thread;
+i calcoli lunghi (Fase 6) vanno lanciati con SLURM.

@@ -13,7 +13,6 @@ from wpvrec import __version__
 
 # Planned commands and the phase that implements them (specification Section 11).
 _PLANNED = {
-    "front": 4,
     "run": 6,
     "run-local": 6,
     "experiments": 6,
@@ -173,7 +172,8 @@ def _cmd_solve(args: argparse.Namespace) -> int:
     inp = inputs.build(reg, rep)
     m = lp.build_model(inp)
     solver = str(reg.value("solver"))
-    res = solve.lexicographic(m, args.objective, reg.value("lexicographic_tolerance"), solver)
+    res = solve.lexicographic(m, args.objective, reg.value("lexicographic_tolerance"), solver,
+                              int(reg.value("solver_threads")))  # fmt: skip
     wall = time.time() - t0
     plan = balances.plan_frame(m, inp)
     chk = balances.verify(m, inp)
@@ -227,6 +227,66 @@ def _cmd_solve(args: argparse.Namespace) -> int:
     return 0 if chk["all_ok"] else 1
 
 
+def _cmd_front(args: argparse.Namespace) -> int:
+    import time
+    from pathlib import Path
+
+    from wpvrec import runmeta, study
+    from wpvrec.params import load_registry
+
+    reg = load_registry(args.file)
+    reg.gate("model")
+    if args.points:
+        reg.values["pareto_points"] = args.points
+    t0 = time.time()
+    st = study.front_study(reg, args.pv, keep_models=not args.no_figures)
+    wall = time.time() - t0
+    f, sp, pol = st.front, st.special.set_index("point"), st.policies.set_index("policy")
+    print(f"Pareto front ({len(f)} points, {args.pv} PV year), {wall:.1f} s")
+    print(f"  F1 from {f.F1.iloc[0]:,.0f} to {f.F1.iloc[-1]:,.0f} kWh/yr "
+          f"(+{f.F1.iloc[-1] - f.F1.iloc[0]:,.0f}); F2 from {f.F2.iloc[0]:,.1f} to "
+          f"{f.F2.iloc[-1]:,.1f} missions*h/yr")  # fmt: skip
+    print(f"  delay cost of one kWh: {f.shadow_price.min():.3f} to {f.shadow_price.max():.3f} "
+          f"missions*h per kWh; check vs finite differences: "
+          f"{'ok' if f.shadow_ok.all() else 'NOT ok'}")  # fmt: skip
+    for name in ("min_F2", "knee", "max_F1", "same_F2_as_P0"):
+        r = sp.loc[name]
+        print(
+            f"  {name:14s} F1 {r.F1_kwh:10,.0f}  F2 {r.F2_missions_h:9,.1f}  self-cons. "
+            f"{r.self_consumption_pct:5.1f}%  late pallets {r.pallets_after_cutoff:7,.1f}"
+        )
+    for name in pol.index:
+        r = pol.loc[name]
+        print(f"  {name:14s} F1 {r.F1_kwh:10,.0f}  F2 {r.F2_missions_h:9,.1f}  "
+              f"front at same F1: F2 {r.front_F2_at_same_F1:,.1f}; on/inside front: "
+              f"{bool(r.on_or_inside_front)}")  # fmt: skip
+    r = pol.loc["P0"]
+    print(f"  P0 spill: {r.internal_missions_outside_per_yr:,.0f} of "
+          f"{r.internal_missions_per_yr:,.0f} internal missions/yr and "
+          f"{r.charging_kwh_outside_per_yr:,.0f} of {r.charging_kwh_per_yr:,.0f} kWh/yr of "
+          "charging outside the windows")  # fmt: skip
+    for w in st.warnings:
+        print(f"  WARNING: {w}")
+    for d in st.dropped:
+        print(f"  dropped: {d}")
+    out = Path(args.out)
+    out.mkdir(parents=True, exist_ok=True)
+    f.to_csv(out / "front.csv", index=False)
+    st.special.to_csv(out / "special_points.csv", index=False)
+    st.policies.to_csv(out / "policies.csv", index=False)
+    meta = runmeta.run_meta(reg, str(reg.value("solver")), wall,
+                            {"pv": args.pv, "points": len(f), "warnings": st.warnings,
+                             "dropped": st.dropped})  # fmt: skip
+    runmeta.write(out / "run_meta.json", meta)
+    print(f"  written {out}/front.csv, special_points.csv, policies.csv, run_meta.json")
+    if not args.no_figures:
+        from wpvrec.figures.pareto_figures import make_all
+
+        for p in make_all(st):
+            print(f"  {p}")
+    return 0 if not st.warnings else 1
+
+
 def _cmd_figures(args: argparse.Namespace) -> int:
     from wpvrec.params import load_registry
 
@@ -267,6 +327,13 @@ def _add_data_and_figures(sub) -> None:
     for q in (d,):
         q.add_argument("--file", default=DEFAULT_REGISTRY, help="registry YAML file")
     d.set_defaults(func=_cmd_data)
+    fr = sub.add_parser("front", help="Pareto front, special points, policies P0/P1 (Phase 4)")
+    fr.add_argument("--pv", choices=["typical", "control"], default="typical")
+    fr.add_argument("--points", type=int, default=None, help="override pareto_points")
+    fr.add_argument("--out", default="results/base", help="output directory")
+    fr.add_argument("--no-figures", action="store_true", help="do not write the figures")
+    fr.add_argument("--file", default=DEFAULT_REGISTRY, help="registry YAML file")
+    fr.set_defaults(func=_cmd_front)
     s = sub.add_parser("solve", help="solve the LP once (lexicographic) and check the balances")
     s.add_argument("--objective", choices=["min_F2", "max_F1"], default="min_F2")
     s.add_argument("--pv", choices=["typical", "control"], default="typical")

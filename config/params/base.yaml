@@ -1307,6 +1307,36 @@ parameters:
     source_type: design_choice
     used_by: [model]
 
+  - id: solver_threads
+    group: method
+    description: Threads used by the LP solver
+    value: 1
+    unit: threads
+    sensitivity: [1, 4]
+    source: "Design choice 18/11/2026: the LP is small (simplex is serial); one thread per run fits SLURM arrays and the shared head node"
+    source_type: design_choice
+    used_by: [model]
+
+  - id: augmecon_eps
+    group: method
+    symbol: "\\varepsilon_{aug}"
+    description: Weight of the normalised slack in the AUGMECON objective (min F2 - eps S / Delta)
+    value: 1.0e-3
+    unit: missions*h
+    sensitivity: [1.0e-6, 1.0e-3]
+    source: "Mavrotas (2009), Applied Mathematics and Computation 213(2) 455-465, Sect. 3: eps between 1e-6 and 1e-3; as in Mariuzzo et al. (2023)"
+    source_type: design_choice
+    used_by: [model]
+
+  - id: shadow_price_tolerance
+    group: method
+    description: Relative tolerance when the dual of the F1 constraint is compared with the finite differences of the front
+    value: 0.01
+    unit: "-"
+    source: "Design choice 18/11/2026 (spec Sect. 5.7.3: warn if they disagree beyond a tolerance)"
+    source_type: design_choice
+    used_by: [model]
+
   - id: lexicographic_tolerance
     group: method
     description: Relative tolerance on the first objective in lexicographic solves

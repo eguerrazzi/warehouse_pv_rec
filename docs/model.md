@@ -85,6 +85,47 @@ optimum within a relative tolerance (registry `lexicographic_tolerance`).
 - **Rounding**: missions are continuous; `balances.rounding_effect` recomputes F1 and F2 with integer missions per
   slot (base case: F1 +4 kWh/yr, F2 +11 missions·h/yr at min F2).
 
+## Pareto front, policies and KPIs (Phase 4)
+
+`wpvrec front` (code: `pareto.py`, `policies.py`, `kpi.py`, `study.py`).
+
+**AUGMECON** (Mavrotas 2009, as in Mariuzzo et al. 2023): $\min F_2 - \varepsilon_{aug} S/\Delta$ s.t.
+$F_1 - S = e_k$, $S \ge 0$, V0–V9, with $\Delta$ the F1 range of the lexicographic payoff table and $K$ =
+`pareto_points` targets evenly spaced (the last one tightened by the lexicographic tolerance). The augmentation
+also pushes $s_t$ up to $\min(PV_t, E_t)$, so the LP value of $F_1$ is the true one (checked on every point).
+
+**Shadow price** of a point = dual of $F_1 - S = e_k$ = missions·h of $F_2$ per extra kWh of $F_1$. $F_2$ as a
+function of the target is convex and piecewise linear (LP value function), so the dual must lie between the
+slopes of the two adjacent segments; checked with relative tolerance `shadow_price_tolerance` plus
+$\varepsilon_{aug}/\Delta$. Duplicates and dominated points are dropped and logged.
+
+**Special points**: the extremes; the knee = maximum of $\tilde F_1 - \tilde F_2$ (objectives normalised to
+[0, 1] between the extremes, i.e. the largest distance below the line joining them); the point with the same
+$F_2$ as P0 ($\max F_1$ s.t. $F_2 \le F_2^{P0}$, then $\min F_2$).
+
+**P0 current practice** (assumption): internal missions only in slots of [shift start, `p0_morning_end`) and
+[`p0_evening_start`, shift end), charging only in the evening window, no pre-picking ($y_{g,t}=0$ for $t<a_g$).
+When the rule is infeasible, work spills outside the windows. Instead of an arbitrary large penalty, three
+lexicographic stages: (1) min $\sum w_d\,\delta_t z$; (2) min $\sum w_d\,\delta_t P^{ch} q$; (3) min $F_2$, where
+$\delta_t$ is the distance in hours from the nearest allowed slot (spilled work stays as close as possible to the
+rule). Spill is reported (missions/yr and kWh/yr outside the windows).
+
+**P1 follow the sun**: (1) max flexible energy inside [`p1_sun_start`, `p1_sun_end`): $e^n$ × (internal
+missions + picks of predictable orders) + $P^{ch}$ × charging hours; (2) min $F_2$ keeping it.
+
+**Policies vs front**: for each policy an exact solve $\min F_2$ s.t. $F_1 \ge F_1^{P}$ gives the front at the
+same $F_1$; the policy must not be below it. Linear interpolation between front points is not used for this
+check, because chords lie above a convex front.
+
+**F1 of a plan**: when the last stage only minimises $F_2$ (policies), the LP variable $s_t$ is not pushed to
+$\min(PV_t, E_t)$; every reported F1 is therefore recomputed with $s_t = \min(PV_t, E_t)$ (spec V9).
+
+**KPIs** (same for all plans): F1, F2 (lateness, queue), pallets after cut-off, pre-picks, PV, PV used,
+self-consumption and self-sufficiency (annual, with non-working days), import, export, delay cost per kWh
+(front points), energy cost = import × `retail_price`.
+
+**Solver threads**: `solver_threads` (1). HiGHS otherwise starts one thread per two cores.
+
 ## REC evaluation (Phase 5)
 
 To be documented with the interpretation of the enterprise cap $\theta$.

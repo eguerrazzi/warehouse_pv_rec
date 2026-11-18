@@ -69,6 +69,19 @@ def plan_frame(m, inp: ModelInputs) -> pd.DataFrame:
     return pd.DataFrame(rows)
 
 
+def f1_recomputed(m, inp: ModelInputs) -> float:
+    """F1 of the plan with s = min(PV, E) (spec V9): the LP variable s is only bounded above,
+    so it equals min(PV, E) only when F1 is maximised (or rewarded, as in AUGMECON)."""
+    v = pyo.value
+    return float(
+        sum(
+            inp.weights[d] * min(inp.days[d].pv[t - 1], v(m.E[d, t]))
+            for d in m.D
+            for t in m.T
+        )
+    )
+
+
 def verify(m, inp: ModelInputs) -> dict[str, float]:
     """Largest violation of each check (0 means satisfied); keys ending in '_ok' are booleans."""
     v = pyo.value
