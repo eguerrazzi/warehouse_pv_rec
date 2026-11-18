@@ -226,7 +226,37 @@ certo livello di solare usato. Poi la confronta con due regole semplici:
 
 ![Un giorno di luglio: pratica attuale e ottimo con lo stesso servizio](figures/plan_p0_vs_optimum.png)
 
-## 11. A che punto siamo
+## 11. La CER e i conti economici (Fase 5)
+
+La CER non cambia le decisioni del magazzino: cambia quanto vale l'energia che il magazzino **non** usa. Ogni ora
+l'energia "condivisa" è il minimo fra quello che il magazzino cede alla rete e quello che consumano nella stessa
+ora le famiglie e le attività. Sull'energia condivisa la CER riceve la tariffa premio (80–124 €/MWh, DM 414/2023)
+più circa 8 €/MWh da ARERA; il magazzino ne riceve la metà (β = 50%, ipotesi).
+
+| | Pratica attuale (P0) | Ottimo con lo stesso servizio |
+|---|---|---|
+| Energia ceduta alla rete | 57,6 MWh/anno | 37,4 MWh/anno |
+| di cui condivisa nella CER | 43,6 MWh/anno | 32,5 MWh/anno |
+| Incentivo CER totale / al magazzino | 5.700 / 2.900 €/anno | 4.300 / 2.100 €/anno |
+| Valore annuo per il magazzino (condizione B) | 18.200 € | 20.300 € |
+| Tempo di rientro senza / con CER | 4,9 / 4,1 anni | 4,1 / 3,6 anni |
+| Beneficio se aderisce a una CER altrui (condizione C) | 2.200 €/anno | 3.000 €/anno |
+
+![Valore annuo per piano](figures/value_by_plan.png)
+
+**Cosa vuol dire.**
+- **Usare il solare in casa conviene più che condividerlo**: ogni kWh in più autoconsumato fa perdere alla CER
+  circa **0,13 €** di incentivo (al magazzino 0,07), ma evita di comprare un kWh a **0,25 €**.
+- Il 78% dell'energia condivisa arriva nei **giorni festivi**, quando il magazzino è fermo e le famiglie sono in
+  casa: è il contributo più importante del magazzino alla CER.
+- **Condizione B** (il magazzino installa il FV): con 1.000 €/kWp l'investimento si ripaga in circa 4 anni, anche
+  senza CER. La CER accorcia di circa mezzo anno.
+- **Condizione C** (nessun FV proprio, il magazzino entra nella CER di un altro): il beneficio è piccolo
+  (2–3 mila €/anno) ma cresce del 37% se il magazzino sposta la ricarica dei carrelli nelle ore di sole.
+- **Il tetto del 55% per le imprese** non è vincolante nel caso base. La sua lettura esatta va verificata (vedi
+  domande).
+
+## 12. A che punto siamo
 
 | Fase | Contenuto | Stato |
 |---|---|---|
@@ -234,13 +264,13 @@ certo livello di solare usato. Poi la confronta con due regole semplici:
 | 1 | Registro dei parametri con fonti, controllo di provenienza | fatta |
 | 2 | Dati: PV, prezzi, consumi, calendario, giorni rappresentativi | fatta |
 | 3 | Il modello LP con i vincoli V0–V9 | fatta (decisioni del 18/11 incluse) |
-| 4 | Frontiera di Pareto, prezzi ombra, politiche P0/P1 | fatta (in attesa del tuo ok) |
-| 5 | CER ed economia (condizioni B e C) | da fare |
+| 4 | Frontiera di Pareto, prezzi ombra, politiche P0/P1 | fatta |
+| 5 | CER ed economia (condizioni B e C) | fatta (in attesa del tuo ok) |
 | 6 | Scenari di sensitività, cluster SLURM | da fare |
 | 7 | Dashboard interattiva | da fare |
 | 8 | Documentazione finale, riproducibilità | da fare |
 
-## 12. Piccolo glossario
+## 13. Piccolo glossario
 
 - **AVS/RS**: magazzino automatico con veicoli autonomi; qui elevatori, shuttle e satelliti.
 - **Shuttle e satellite**: lo shuttle corre lungo il corridoio del piano, il satellite entra nel canale profondo a
@@ -254,7 +284,7 @@ certo livello di solare usato. Poi la confronta con due regole semplici:
 - **Prezzo ombra**: quanto peggiora F2 se chiedo 1 kWh in più di F1.
 - **TIP**: tariffa incentivante premio della CER (DM 414/2023).
 
-## 13. Comandi utili
+## 14. Comandi utili
 
 ```bash
 conda activate wpvrec
@@ -265,7 +295,7 @@ wpvrec data process             # produce i profili e stampa i controlli
 wpvrec figures                  # rigenera tutte le figure di docs/figures
 wpvrec solve                    # risolve il modello (min F2) e controlla i bilanci
 wpvrec solve --objective max_F1 # risolve massimizzando il solare autoconsumato
-wpvrec front                    # frontiera di Pareto, P0/P1, figure (circa 15 s); risultati in results/base
+srun -p debug -c 1 --mem=4G wpvrec front   # frontiera, P0/P1, CER, economia, figure (circa 20 s, via SLURM)
 pytest                          # esegue i test
 ```
 

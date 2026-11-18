@@ -236,6 +236,8 @@ def _cmd_front(args: argparse.Namespace) -> int:
 
     reg = load_registry(args.file)
     reg.gate("model")
+    reg.gate("rec")
+    reg.gate("economics")
     if args.points:
         reg.values["pareto_points"] = args.points
     t0 = time.time()
@@ -269,20 +271,42 @@ def _cmd_front(args: argparse.Namespace) -> int:
         print(f"  WARNING: {w}")
     for d in st.dropped:
         print(f"  dropped: {d}")
+    if "rec_shared_kwh" in f:
+        print(f"  REC ({reg.value('rec_member_set')}): shared {f.rec_shared_kwh.iloc[0]:,.0f} -> "
+              f"{f.rec_shared_kwh.iloc[-1]:,.0f} kWh/yr along the front; incentive "
+              f"{f.rec_incentive_eur.iloc[0]:,.0f} -> {f.rec_incentive_eur.iloc[-1]:,.0f} EUR/yr, "
+              f"warehouse share {f.rec_warehouse_incentive_eur.iloc[0]:,.0f} EUR/yr")  # fmt: skip
+        for name in pol.index:
+            r = pol.loc[name]
+            print(f"  REC {name}: shared {r.rec_shared_kwh:,.0f} kWh/yr, incentive "
+                  f"{r.rec_incentive_eur:,.0f} EUR/yr "
+                  f"(warehouse {r.rec_warehouse_incentive_eur:,.0f})")  # fmt: skip
+    eb, ec = study.economics_study(st, reg, args.pv)
+    base_inc = reg.value("investment_incentive")
+    for _, r in eb[eb.investment_incentive_pct == base_inc].iterrows():
+        print(f"  B {r.plan:14s} payback {r.no_rec_payback_yr:4.1f} / {r.rec_payback_yr:4.1f} yr, "
+              f"NPV {r.no_rec_npv_eur:9,.0f} / {r.rec_npv_eur:9,.0f} EUR, IRR "
+              f"{r.no_rec_irr_pct:4.1f} / {r.rec_irr_pct:4.1f}% (without / with REC)")  # fmt: skip
+    for _, r in ec.iterrows():
+        print(f"  C {r.plan:14s} warehouse shared {r.warehouse_shared_kwh:,.0f} kWh/yr, "
+              f"benefit {r.benefit_eur:,.0f} EUR/yr")  # fmt: skip
     out = Path(args.out)
     out.mkdir(parents=True, exist_ok=True)
     f.to_csv(out / "front.csv", index=False)
+    eb.to_csv(out / "economics_b.csv", index=False)
+    ec.to_csv(out / "economics_c.csv", index=False)
     st.special.to_csv(out / "special_points.csv", index=False)
     st.policies.to_csv(out / "policies.csv", index=False)
     meta = runmeta.run_meta(reg, str(reg.value("solver")), wall,
                             {"pv": args.pv, "points": len(f), "warnings": st.warnings,
                              "dropped": st.dropped})  # fmt: skip
     runmeta.write(out / "run_meta.json", meta)
-    print(f"  written {out}/front.csv, special_points.csv, policies.csv, run_meta.json")
+    print(f"  written {out}/front.csv, special_points.csv, policies.csv, economics_b.csv, "
+          "economics_c.csv, run_meta.json")  # fmt: skip
     if not args.no_figures:
         from wpvrec.figures.pareto_figures import make_all
 
-        for p in make_all(st):
+        for p in make_all(st, economics=(eb, ec, base_inc)):
             print(f"  {p}")
     return 0 if not st.warnings else 1
 

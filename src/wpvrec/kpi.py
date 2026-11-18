@@ -3,12 +3,13 @@
 PV used, self-consumption and self-sufficiency (annual, with the non-working days);
 energy imported and exported; lateness, pallets after the cut-off and queue time; delay
 cost per kWh (shadow price, front points only); energy cost when the retail price exists.
-REC indicators are added in Phase 5.
+REC indicators (``rec.evaluate``, prefix ``rec_``): export, shared energy, export revenue,
+incentive and the warehouse share (with the enterprise cap).
 """
 
 from __future__ import annotations
 
-from wpvrec import balances
+from wpvrec import balances, rec
 from wpvrec.days import RepresentativeDays
 from wpvrec.model import solve
 from wpvrec.model.inputs import ModelInputs
@@ -16,9 +17,10 @@ from wpvrec.params import ProvenanceGateError, Registry
 from wpvrec.units import KWH_PER_MWH
 
 
-def kpis(m, inp: ModelInputs, rep: RepresentativeDays, reg: Registry, shadow_price=None) -> dict:
+def kpis(m, inp: ModelInputs, rep: RepresentativeDays, reg: Registry, shadow_price=None,
+         plan=None) -> dict:  # fmt: skip
     r = solve.result(m)
-    plan = balances.plan_frame(m, inp)
+    plan = balances.plan_frame(m, inp) if plan is None else plan
     ann = balances.annual_summary(plan, rep, reg.value("offshift_standby_kw"))
     w = plan["weight"]
     out = {
@@ -41,4 +43,5 @@ def kpis(m, inp: ModelInputs, rep: RepresentativeDays, reg: Registry, shadow_pri
         out["energy_cost_eur"] = ann["import_kwh"] / KWH_PER_MWH * price
     except ProvenanceGateError:
         out["energy_cost_eur"] = None
+    out |= {f"rec_{k}": val for k, val in rec.evaluate(plan, rep, reg).items()}
     return out

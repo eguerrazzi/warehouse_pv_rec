@@ -121,8 +121,56 @@ def day_figure(st, month: int = 7):
     return fig
 
 
-def make_all(st, out_dir: Path = OUT_DIR) -> list[Path]:
+def value_figure(eb, ec, base_incentive: float):
+    """Annual value for the warehouse: condition B (own PV) and condition C (external REC)."""
+    plans = [("P0", "P0 current\npractice"), ("P1", "P1 follow\nthe sun"),
+             ("same_F2_as_P0", "Optimum,\nsame service")]  # fmt: skip
+    b = eb[eb.investment_incentive_pct == base_incentive].set_index("plan")
+    c = ec.set_index("plan")
+    fig, (a1, a2) = plt.subplots(1, 2, figsize=(11, 3.9), gridspec_kw={"width_ratios": [1.4, 1]})
+    xs = np.arange(len(plans))
+    parts = [("savings_eur", "avoided purchase (self-consumption)", BLUE),
+             ("export_revenue_eur", "export sold at the zonal price", MUTED),
+             ("rec_incentive", "warehouse share of the REC incentive", AQUA)]  # fmt: skip
+    bottom = np.zeros(len(plans))
+    for col, lab, colr in parts:
+        if col == "rec_incentive":
+            val = np.array([b.loc[p, "rec_annual_flow_eur"] - b.loc[p, "no_rec_annual_flow_eur"]
+                            for p, _ in plans])  # fmt: skip
+        else:
+            val = np.array([b.loc[p, col] for p, _ in plans])
+        a1.bar(xs, val / KWH_PER_MWH, bottom=bottom / KWH_PER_MWH, color=colr, width=0.55,
+               label=lab, edgecolor="white", lw=2)  # fmt: skip
+        bottom += val
+    for x in xs:
+        a1.text(x, bottom[x] / KWH_PER_MWH + 0.3, f"{bottom[x] / KWH_PER_MWH:,.1f}", ha="center",
+                fontsize=8, color=INK)  # fmt: skip
+    a1.set_xticks(xs, [lab for _, lab in plans], fontsize=8)
+    a1.set_ylabel("k EUR per year (before O&M)")
+    a1.set_title("Condition B: own PV, with REC", loc="left", fontsize=10, color=INK)
+    a1.legend(frameon=False, fontsize=7.5, loc="upper left")
+    a1.set_ylim(0, bottom.max() / KWH_PER_MWH * 1.35)
+    vals = np.array([c.loc[p, "benefit_eur"] for p, _ in plans])
+    a2.bar(xs, vals, color=AQUA, width=0.55)
+    for x, val in zip(xs, vals, strict=True):
+        a2.text(x, val + vals.max() * 0.02, f"{val:,.0f}", ha="center", fontsize=8, color=INK)
+    a2.set_xticks(xs, [lab for _, lab in plans], fontsize=8)
+    a2.set_ylabel("EUR per year")
+    a2.set_title("Condition C: member of an external REC", loc="left", fontsize=10, color=INK)
+    for ax in (a1, a2):
+        ax.grid(axis="y", color=LINE, lw=0.5)
+    fig.text(0.01, -0.03, "Constant 2025 prices: retail Eurostat, zonal GME CNOR; premium tariff "
+             "DM 414/2023; REC split: beta (B) and consumer share pro rata (C), both assumptions.",
+             fontsize=7, color=MUTED)  # fmt: skip
+    fig.tight_layout()
+    return fig
+
+
+def make_all(st, out_dir: Path = OUT_DIR, economics=None) -> list[Path]:
+    """``economics`` = (eb, ec, base investment incentive) adds the value figure."""
     figs = {"pareto_front": front_figure(st)}
+    if economics is not None:
+        figs["value_by_plan"] = value_figure(*economics)
     if st.plans:
         figs["plan_p0_vs_optimum"] = day_figure(st)
     out_dir.mkdir(parents=True, exist_ok=True)

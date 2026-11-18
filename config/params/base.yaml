@@ -1096,6 +1096,18 @@ parameters:
     source_type: design_choice
     used_by: [rec, data]
 
+  - id: theta_basis
+    group: incentives
+    description: "Energy the 55% threshold refers to: export (energy fed into the grid by the REC plants) or shared (shared energy, literal reading of the spec)"
+    value: export
+    unit: "-"
+    sensitivity: [shared]
+    source: "DM 414/2023 Allegato 1 as summarised by Assolombarda ('importo della tariffa premio eccedentario rispetto a quello determinato in applicazione della soglia percentuale di energia condivisa espressa al 55%', destined to consumers other than enterprises) and Unioncamere Veneto 2025 (55% premium only, 45% with capital grant); read as shared energy above 55% of the energy fed in; exact text to check in GSE Regole Operative DD 228/2025"
+    source_type: design_choice
+    status: to_verify
+    used_by: [rec]
+    notes: "Checked on annual totals. The cap concerns the premium tariff only (not the ARERA valorisation). Flagged for Ema (spec Sect. 6.1)."
+
   - id: pi_arera
     group: incentives
     symbol: "\\pi^{ARERA}"
@@ -1167,6 +1179,17 @@ parameters:
     sensitivity: [20, 30, 40]
     source: "Hypothetical future scheme (PNRR excluded), Ema's decision 17/11/2026"
     source_type: assumption
+    used_by: [economics]
+
+  - id: c_consumer_share
+    group: economics
+    description: "Condition C: share of the REC incentive returned to consumer members, split pro rata to each member's contribution to the shared energy"
+    value: 50
+    unit: "%"
+    sensitivity: {low: 37.5, high: 62.5}
+    source: "Assumption 18/11/2026 (REC by-laws not known; same base as beta_warehouse)"
+    source_type: assumption
+    notes: "Generic range +/-25% on magnitudes (Ema 18/11/2026)"
     used_by: [economics]
 
   - id: rec_fee
@@ -1250,6 +1273,7 @@ parameters:
     sensitivity: {low: 7, high: 9}
     source: "Specification Sect. 5.8 (06-08, current practice, assumption)"
     source_type: assumption
+    status: to_verify
     notes: "Generic range approved by Ema 18/11/2026 for assumptions without a range in the sheet: +/-25% (magnitudes), +/-1 h (clock times)"
     used_by: [model]
 
@@ -1261,7 +1285,8 @@ parameters:
     sensitivity: {low: 19, high: 21}
     source: "Specification Sect. 5.8 (20-22, current practice, assumption)"
     source_type: assumption
-    notes: "Generic range approved by Ema 18/11/2026 for assumptions without a range in the sheet: +/-25% (magnitudes), +/-1 h (clock times). Charging 'at end of shift' read as this evening window."
+    status: to_verify
+    notes: "Generic range approved by Ema 18/11/2026 for assumptions without a range in the sheet: +/-25% (magnitudes), +/-1 h (clock times). Charging 'at end of shift' read as this evening window. To verify (Ema 18/11/2026): opportunity charging in breaks or at night are alternatives; the P0 gain (+20 MWh/yr) depends on it."
     used_by: [model]
 
   - id: p1_sun_start

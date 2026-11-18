@@ -128,4 +128,31 @@ self-consumption and self-sufficiency (annual, with non-working days), import, e
 
 ## REC evaluation (Phase 5)
 
-To be documented with the interpretation of the enterprise cap $\theta$.
+Ex post, on every plan (code: `rec.py`, KPIs with prefix `rec_`). The warehouse is the only producer.
+
+- Export $x_t = \max(PV_t - E_t, 0)$ on working days (from the plan) and $PV_t - \min(PV_t, P^{sb})$ on
+  non-working days; other members' load $W_t$ = households (bottom-up profile, × 50) + 3 businesses (ELMAS), by
+  month and day type; `rec_member_set = enterprises only` keeps the businesses only.
+- Shared energy $Sh_t = \min(x_t, W_t)$; premium tariff $TIP_t = 80 + \min(40, \max(0, 180 - P^z_t)) + 4$ €/MWh;
+  incentive $= \sum (TIP_t + \pi^{ARERA}) Sh_t$; export always sold at $P^z_t$ (both with and without REC).
+- **Enterprise cap (interpretation, for Ema's review).** DM 414/2023 (as summarised by Assolombarda and
+  Unioncamere): the premium on the shared energy above 55% (45% with a capital grant) goes only to members other
+  than enterprises or to social purposes. Reference energy = energy fed in by the REC plant (`theta_basis =
+  export`, default) or the shared energy (`shared`, literal spec text). Annual totals. The warehouse receives
+  $\beta$ of the incentive but no more premium than the enterprise-eligible premium; the other enterprise members
+  are assumed to receive no premium; the ARERA valorisation is not capped. Base case: not binding.
+- **Incentive given up per extra kWh used on site** = $-\Delta$incentive$/\Delta F_1$ between adjacent front
+  points (`rec_incentive_lost_eur_per_kwh`).
+
+## Economics (Phase 5)
+
+Code: `economics.py`, tables `economics_b.csv`, `economics_c.csv` written by `wpvrec front`. Constant 2025 prices,
+real discount rate, no PV degradation (not in the registry).
+
+- **B, own PV**: $I = c^{PV}\,kWp\,(1-\text{incentive})$; annual flow = PV used (working + non-working days) ×
+  retail price + export × $P^z$ + warehouse REC share (with REC) − (O&M + insurance) × kWp; simple payback, NPV over
+  the life, IRR (closed form: root of the annuity polynomial). Investment incentive 0% and 20/30/40%.
+- **C, member of an external REC**: external plant of `ext_plant_kwp`, same profile, all fed in;
+  $Sh_t = \min(X^{ext}_t, W^{wh}_t + W_t)$; the REC returns `c_consumer_share` of the incentive to consumers, pro rata
+  to their hourly contribution; the warehouse premium is capped as above; benefit = share − fee. Evaluated for
+  the load of P0, P1 and the optimum with P0's service.
