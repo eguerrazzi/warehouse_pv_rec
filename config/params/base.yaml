@@ -1,0 +1,1066 @@
+# Parameter registry — base case (specification Appendix A, approved by Ema 17/11/2026,
+# with the changes approved on 18/11/2026 recorded in docs/decisions.md).
+#
+# Every number carries its source and source type (specification Section 3).
+# Derived entries have value: null and a formula; the loader computes them.
+# Guerrazzi et al. (2019) = Guerrazzi, Mininno, Aloini, Dulmin, Scarpelli, Sabatini. Energy Evaluation of
+#   Deep-Lane Autonomous Vehicle Storage and Retrieval System. Sustainability 11(14) 3817, doi:10.3390/su11143817
+
+meta:
+  name: base
+  description: SME with a pallet deep-lane AVS/RS in Torrita di Siena (Tuscany), inspired by Guerrazzi et al. (2019) (Cassioli)
+  approved: "2026-11-17 (sheet); 2026-11-18 (C, energy per mission, pallet mass)"
+
+parameters:
+  # ================================================================ A.1 Warehouse
+  - id: system_type
+    group: warehouse
+    description: Storage system type
+    value: "pallet deep-lane AVS/RS, 2,730 locations, 5 levels, 2 lifts, 6 shuttles with satellite"
+    unit: "-"
+    sensitivity: ["SBS/RS for totes"]
+    source: "Guerrazzi et al. (2019), Sect. 5.1 p. 9 and Table A1 p. 12 (Cassioli)"
+    source_type: literature
+    used_by: [report]
+    notes: "Guerrazzi et al. (2019) p. 5 says 1 shuttle per tier (5 tiers); the installed power on p. 9 counts 6 shuttles."
+
+  - id: avsrs_installed_power
+    group: warehouse
+    description: Installed power of the AVS/RS (2 lifts + 6 shuttles)
+    value: 44.6
+    unit: kW
+    source: "Guerrazzi et al. (2019), Sect. 5.1 p. 9"
+    source_type: literature
+    used_by: [report]
+
+  - id: n_tiers
+    group: warehouse
+    symbol: "N_z"
+    description: Number of rack tiers (one tier-captive shuttle each)
+    value: 5
+    unit: tiers
+    source: "Guerrazzi et al. (2019), Table A1 p. 12; Sect. 4.1 p. 5 (1 shuttle per tier)"
+    source_type: literature
+    used_by: [model]
+
+  - id: location
+    group: warehouse
+    description: Site location
+    value: "Torrita di Siena (SI), Italy"
+    unit: "-"
+    sensitivity: ["North Italy", "South Italy"]
+    source: "Ema's decision 17/11/2026"
+    source_type: design_choice
+    used_by: [data, report]
+
+  - id: site_latitude
+    group: warehouse
+    description: Site latitude (Torrita di Siena)
+    value: 43.17
+    unit: "deg N"
+    source: "Approximate coordinates given in the specification (Sect. 4); to verify in Phase 2"
+    source_type: real
+    status: to_verify
+    used_by: [data]
+
+  - id: site_longitude
+    group: warehouse
+    description: Site longitude (Torrita di Siena)
+    value: 11.77
+    unit: "deg E"
+    source: "Approximate coordinates given in the specification (Sect. 4); to verify in Phase 2"
+    source_type: real
+    status: to_verify
+    used_by: [data]
+
+  - id: shift_start
+    group: warehouse
+    description: Start of the working day (2 shifts, Mon-Fri)
+    value: 6
+    unit: "h (clock)"
+    sensitivity: ["1 shift", "3 shifts"]
+    source: "Parameter sheet 17/11/2026: 2 shifts 06-22; Guerrazzi et al. (2019) p. 9: each run covers 15/16 h of activity"
+    source_type: estimate
+    used_by: [model]
+
+  - id: shift_end
+    group: warehouse
+    description: End of the working day (2 shifts, Mon-Fri)
+    value: 22
+    unit: "h (clock)"
+    sensitivity: ["1 shift", "3 shifts"]
+    source: "Parameter sheet 17/11/2026: 2 shifts 06-22; Guerrazzi et al. (2019) p. 9: each run covers 15/16 h of activity"
+    source_type: estimate
+    used_by: [model]
+
+  - id: working_days_per_year
+    group: warehouse
+    symbol: "\\sum_d w_d"
+    description: Working days per year (Mon-Fri minus public holidays)
+    value: 250
+    unit: days/yr
+    source: "Parameter sheet 17/11/2026; replaced in Phase 2 by the count from the Italian calendar"
+    source_type: estimate
+    status: to_verify
+    used_by: [model]
+
+  - id: missions_per_day
+    group: warehouse
+    symbol: "N"
+    description: AVS/RS missions per working day
+    value: 1500
+    unit: missions/day
+    sensitivity: {low: 800, high: 3000}
+    source: "Guerrazzi et al. (2019) Table A6 p. 13 (600 storages + 600 retrievals, about 1,200/day), raised to 1,500 by Ema's decision 17/11/2026"
+    source_type: estimate
+    used_by: [model]
+
+  - id: n_inbound
+    group: warehouse
+    symbol: "n_{in}"
+    description: Inbound storage missions per day
+    value: 650
+    unit: missions/day
+    sensitivity: {scale_with: missions_per_day}
+    source: "Mission split of the approved sheet (from the 25% shiftable share), confirmed by Ema 17/11/2026"
+    source_type: assumption
+    used_by: [model]
+
+  - id: n_picks
+    group: warehouse
+    symbol: "n_{pick}"
+    description: Picking missions per day (orders)
+    value: 650
+    unit: missions/day
+    sensitivity: {scale_with: missions_per_day}
+    source: "Mission split of the approved sheet (from the 25% shiftable share), confirmed by Ema 17/11/2026"
+    source_type: assumption
+    used_by: [model]
+
+  - id: n_replenishment
+    group: warehouse
+    symbol: "n_{repl}"
+    description: Replenishment missions of the picking area per day
+    value: 100
+    unit: missions/day
+    sensitivity: {scale_with: missions_per_day}
+    source: "Mission split of the approved sheet (from the 25% shiftable share), confirmed by Ema 17/11/2026"
+    source_type: assumption
+    used_by: [model]
+
+  - id: n_reslotting
+    group: warehouse
+    symbol: "n_{slot}"
+    description: Re-slotting missions per day
+    value: 100
+    unit: missions/day
+    sensitivity: {scale_with: missions_per_day}
+    source: "Mission split of the approved sheet (from the 25% shiftable share), confirmed by Ema 17/11/2026"
+    source_type: assumption
+    used_by: [model]
+
+  - id: shiftable_share
+    group: warehouse
+    description: Share of shiftable missions (pre-picking, replenishment, re-slotting)
+    value: 25
+    unit: "%"
+    sensitivity: {low: 10, high: 40}
+    source: "Shiftable-activities document (project notes, 17/11/2026)"
+    source_type: assumption
+    used_by: [model]
+    notes: "Nominal shiftable volume of the split: 100 + 100 + 30% of 650 = 395 missions (26%)."
+
+  - id: pallet_mass
+    group: warehouse
+    symbol: "m_{UL}"
+    description: Mass of a unit load (pallet)
+    value: 1200
+    unit: kg
+    source: "Guerrazzi et al. (2019), Table A5 p. 13"
+    source_type: literature
+    used_by: [report]
+    notes: "Was 100 kg (Ekren, Akpunar, Lerher 2016) in the sheet of 17/11; Guerrazzi et al. (2019) adopted by Ema's decision 18/11/2026."
+
+  - id: e_mission_gross_kj
+    group: warehouse
+    description: Gross energy per AVS/RS mission, as published (mean over storage and picking)
+    value: 75
+    unit: kJ/mission
+    sensitivity: {low: 70.92, high: 146.16}
+    source: "Guerrazzi et al. (2019), Table 2 p. 9 (energy consumed per UL: mean 75, min 70, max 80 kJ). Range: Ekren, Akpunar, Lerher (2016), 0.0197-0.0406 kWh per transaction"
+    source_type: literature
+    used_by: [model]
+    notes: "Was 30 Wh (Ekren et al. 2016) in the sheet of 17/11; Guerrazzi et al. (2019) adopted by Ema's decision 18/11/2026. Storing 98 kJ/UL, picking 52 kJ/UL (Table 2)."
+
+  - id: e_mission_gross
+    group: warehouse
+    symbol: "e"
+    description: Gross energy per AVS/RS mission
+    value: null
+    formula: "e_mission_gross_kj / KJ_PER_WH"
+    unit: Wh/mission
+    source: "Unit conversion of e_mission_gross_kj"
+    source_type: derived
+    used_by: [model]
+
+  - id: regen_share
+    group: warehouse
+    symbol: "\\varrho"
+    description: Share of consumed energy recovered by regenerative braking of the lifts
+    value: 28.3
+    unit: "% of consumed energy"
+    sensitivity: {low: 0, high: 35}
+    source: "Guerrazzi et al. (2019), Sect. 6 p. 11 and Fig. 4 (28.3%)"
+    source_type: literature
+    used_by: [model]
+    notes: "The sheet of 17/11 rounded it to 28; the published value is used."
+
+  - id: e_mission_net
+    group: warehouse
+    symbol: "e^n"
+    description: Net energy per AVS/RS mission
+    value: null
+    formula: "e_mission_gross * (1 - regen_share / PERCENT)"
+    unit: Wh/mission
+    source: "e (1 - rho), approved formula (sheet 17/11/2026)"
+    source_type: derived
+    used_by: [model]
+    notes: "Check: Guerrazzi et al. (2019) Tables 2-3 give (75 - 21) kJ = 15.0 Wh net per UL."
+
+  - id: e_mission_sbsrs
+    group: warehouse
+    description: Energy per mission, SBS/RS tote variant
+    value: 0.7
+    unit: Wh/mission
+    sensitivity: {low: 0.65, high: 0.71}
+    source: "Lerher, Ekren, Akpunar (as cited in the approved sheet 17/11/2026)"
+    source_type: literature
+    status: to_verify
+    used_by: [model]
+    notes: "Full reference (year, venue, table) to be completed."
+
+  - id: avsrs_standby_kw
+    group: loads
+    description: AVS/RS base (stand-by) load during shifts
+    value: 3
+    unit: kW
+    sensitivity: {low: 1.5, high: 4}
+    source: "Ertl & Günthner (2016), Logistics Journal: 0.5-1.25 kW per machine"
+    source_type: estimate
+    used_by: [model]
+
+  # ================================================================ Capacity and congestion
+  - id: sim_total_energy_kj
+    group: capacity
+    description: Total energy of one simulated day of the Cassioli AVS/RS (mean of 100 runs)
+    value: 88268
+    unit: kJ
+    source: "Guerrazzi et al. (2019), Table 2 p. 9"
+    source_type: literature
+    used_by: [model]
+
+  - id: sim_hourly_energy_kj
+    group: capacity
+    description: Hourly energy of the simulated day (mean of 100 runs)
+    value: 5772
+    unit: kJ/h
+    source: "Guerrazzi et al. (2019), Table 2 p. 9"
+    source_type: literature
+    used_by: [model]
+
+  - id: sim_missions
+    group: capacity
+    description: Missions of the simulated day (600 storages + 600 retrievals)
+    value: 1200
+    unit: missions
+    source: "Guerrazzi et al. (2019), Table A6 p. 13"
+    source_type: literature
+    used_by: [model]
+
+  - id: mission_cycle_time
+    group: capacity
+    description: Mean time per mission of the AVS/RS operated sequentially (single command)
+    value: null
+    formula: "sim_total_energy_kj / sim_hourly_energy_kj * SECONDS_PER_HOUR / sim_missions"
+    unit: s/mission
+    source: "Run length of Guerrazzi et al. (2019) (total / hourly energy, Table 2) divided by the missions (Table A6)"
+    source_type: derived
+    used_by: [model]
+    notes: "Cross-check: 46.2 s recomputed from eq. (1)-(2) and Tables A1-A3 (notebooks/cycle_time_check.py). The Guerrazzi et al. (2019) simulator uses single command and no concurrent shuttles (p. 6); its cycle time excludes the lifts (p. 6)."
+
+  - id: n_active_shuttles
+    group: capacity
+    description: Tier shuttles working concurrently
+    value: 5
+    unit: shuttles
+    sensitivity: [1, 2, 3, 4, 5]
+    source: "Assumption (18/11/2026, delegated by Ema): the 5 tier-captive shuttles of Guerrazzi et al. (2019) (p. 5) work in parallel; 1 reproduces the sequential simulation of Guerrazzi et al. (2019) (p. 6)"
+    source_type: assumption
+    status: to_verify
+    used_by: [model]
+    notes: "To check with the Guerrazzi & Vandin simulator (Phase 8) or with Cassioli data."
+
+  - id: capacity_c
+    group: capacity
+    symbol: "C"
+    description: Hourly capacity of the AVS/RS
+    value: null
+    formula: "n_active_shuttles * SECONDS_PER_HOUR / mission_cycle_time"
+    unit: missions/h
+    source: "Tier shuttles in parallel, each at the Guerrazzi et al. (2019) mean mission time; replaces the formula of spec Sect. 3.5 (lifts are dedicated and not the bottleneck in Guerrazzi et al. (2019))"
+    source_type: derived
+    status: to_verify
+    used_by: [model]
+    notes: "Lifts: 9-12 s per cycle, 300-400 missions/h each (eq. 1, Table A2), so not binding. n_active_shuttles = 1 gives 78.5 missions/h, infeasible for the base case."
+
+  - id: rho_max
+    group: capacity
+    symbol: "\\bar\\rho"
+    description: Maximum utilisation of the AVS/RS in any hour
+    value: 0.9
+    unit: "-"
+    sensitivity: {low: 0.8, high: 0.95}
+    source: "Common practice for queueing systems (approved sheet 17/11/2026)"
+    source_type: assumption
+    used_by: [model]
+
+  - id: n_pwl_cuts
+    group: capacity
+    symbol: "|L|"
+    description: Linear pieces of the M/M/1 congestion curve
+    value: 4
+    unit: cuts
+    source: "Specification Sect. 5.5 (V6)"
+    source_type: design_choice
+    used_by: [model]
+
+  # ================================================================ Forklifts and docks
+  - id: n_forklifts
+    group: forklifts
+    symbol: "|F|"
+    description: Lithium-ion forklifts serving the docks
+    value: 4
+    unit: forklifts
+    sensitivity: {low: 2, high: 8}
+    source: "Assumption of the approved sheet 17/11/2026"
+    source_type: assumption
+    used_by: [model]
+
+  - id: forklift_use_hours
+    group: forklifts
+    description: Use of each forklift at the docks
+    value: 5
+    unit: h/day per forklift
+    sensitivity: {low: 3, high: 8}
+    source: "Assumption of the approved sheet 17/11/2026"
+    source_type: assumption
+    used_by: [model]
+
+  - id: dock_hours_total
+    group: forklifts
+    symbol: "\\sum_t h_t"
+    description: Total dock workload
+    value: null
+    formula: "n_forklifts * forklift_use_hours"
+    unit: cart-h/day
+    source: "Forklifts x use per forklift (sheet 17/11/2026)"
+    source_type: derived
+    used_by: [model]
+
+  - id: dock_share_inbound
+    group: forklifts
+    description: Share of the dock workload proportional to inbound arrivals u_t (rest uniform over the outbound window)
+    value: 50
+    unit: "%"
+    sensitivity: {to_be_defined: "shape of h_t not fixed in the sheet; proposed default of spec Sect. 3.5 to confirm with Ema"}
+    source: "Proposed default, specification Sect. 3.5 (capped at |F| per hour)"
+    source_type: assumption
+    status: to_verify
+    used_by: [model]
+
+  - id: dock_outbound_start
+    group: forklifts
+    description: Start of the outbound dock window
+    value: 6
+    unit: "h (clock)"
+    sensitivity: {to_be_defined: "shape of h_t not fixed in the sheet; proposed default of spec Sect. 3.5 to confirm with Ema"}
+    source: "Proposed default, specification Sect. 3.5 (outbound before the cut-off)"
+    source_type: assumption
+    status: to_verify
+    used_by: [model]
+
+  - id: dock_outbound_end
+    group: forklifts
+    description: End of the outbound dock window
+    value: 16
+    unit: "h (clock)"
+    sensitivity: {to_be_defined: "shape of h_t not fixed in the sheet; proposed default of spec Sect. 3.5 to confirm with Ema"}
+    source: "Proposed default, specification Sect. 3.5 (outbound before the cut-off)"
+    source_type: assumption
+    status: to_verify
+    used_by: [model]
+
+  - id: forklift_kwh_per_h
+    group: forklifts
+    symbol: "k"
+    description: Forklift consumption per hour of use
+    value: 4
+    unit: kWh/h
+    sensitivity: {low: 3, high: 5}
+    source: "Order of magnitude for 2-2.5 t trucks (approved sheet 17/11/2026); to verify on VDI 2198 datasheets"
+    source_type: estimate
+    status: to_verify
+    used_by: [model]
+
+  - id: battery_kwh
+    group: forklifts
+    symbol: "Q"
+    description: Forklift battery capacity
+    value: 25
+    unit: kWh
+    sensitivity: {low: 20, high: 40}
+    source: "Datasheets of 2-2.5 t lithium forklifts (approved sheet 17/11/2026); to verify"
+    source_type: estimate
+    status: to_verify
+    used_by: [model]
+
+  - id: charger_kw
+    group: forklifts
+    symbol: "P^{ch}"
+    description: Charger power per forklift
+    value: 8
+    unit: kW
+    sensitivity: {low: 4, high: 12}
+    source: "Datasheets (approved sheet 17/11/2026); to verify"
+    source_type: estimate
+    status: to_verify
+    used_by: [model]
+
+  - id: soc_min
+    group: forklifts
+    symbol: "SOC^{min}"
+    description: Minimum battery state of charge
+    value: 20
+    unit: "%"
+    sensitivity: {low: 10, high: 30}
+    source: "Assumption of the approved sheet 17/11/2026"
+    source_type: assumption
+    used_by: [model]
+
+  - id: charge_efficiency
+    group: forklifts
+    symbol: "\\eta"
+    description: Charging efficiency
+    value: 0.92
+    unit: "-"
+    sensitivity: {low: 0.85, high: 0.95}
+    source: "Value of the approved sheet 17/11/2026; no source cited there"
+    source_type: estimate
+    status: to_verify
+    used_by: [model]
+    notes: "An estimate needs an anchor (datasheet or paper); to find."
+
+  - id: charging_hours
+    group: forklifts
+    symbol: "\\chi_t"
+    description: Hours in which charging is allowed
+    value: shifts
+    unit: "-"
+    sensitivity: ["shifts", "shifts and night"]
+    source: "Within shifts, confirmed by Ema 17/11/2026"
+    source_type: design_choice
+    used_by: [model]
+
+  # ================================================================ Fixed loads
+  - id: lighting_kw
+    group: loads
+    description: Lighting during shifts
+    value: 4
+    unit: kW
+    source: "Estimate checked with the Perotti & Dobers split (29% lighting), approved sheet 17/11/2026"
+    source_type: estimate
+    used_by: [model]
+
+  - id: offices_kw
+    group: loads
+    description: Offices, IT and HVAC during shifts
+    value: 5
+    unit: kW
+    sensitivity: {to_be_defined: "no range in the approved sheet"}
+    source: "Assumption of the approved sheet 17/11/2026"
+    source_type: assumption
+    used_by: [model]
+
+  - id: other_kw
+    group: loads
+    description: Other loads during shifts (doors, conveyors, wrappers, compressor)
+    value: 2.5
+    unit: kW
+    sensitivity: {to_be_defined: "no range in the approved sheet"}
+    source: "Assumption of the approved sheet 17/11/2026"
+    source_type: assumption
+    used_by: [model]
+
+  - id: offshift_standby_kw
+    group: loads
+    description: Site stand-by load outside shifts and on weekends
+    value: 2
+    unit: kW
+    sensitivity: {to_be_defined: "no range in the approved sheet"}
+    source: "Assumption of the approved sheet 17/11/2026"
+    source_type: assumption
+    used_by: [model]
+
+  - id: fixed_load_shape
+    group: loads
+    description: Hourly shape of the fixed load within shifts
+    value: flat
+    unit: "-"
+    sensitivity: ["flat", "ELMAS tertiary/logistics shape normalised to the same daily energy"]
+    source: "Default of the approved sheet 17/11/2026; option: ELMAS (Scientific Data 2023), French data adapted"
+    source_type: design_choice
+    used_by: [model]
+
+  # ================================================================ A.2 Photovoltaics
+  - id: pv_kwp
+    group: pv
+    description: Installed PV power
+    value: 80
+    unit: kWp
+    sensitivity: {low: 40, high: 200}
+    source: "Ema's decision 17/11/2026: about 100 MWh/yr / 1,300 kWh/kWp, rounded"
+    source_type: design_choice
+    used_by: [model, data]
+    notes: "Typed 'derived' in the sheet, but the value is a rounded choice, not computed by code: recorded as design choice (to confirm with Ema)."
+
+  - id: pv_profile
+    group: pv
+    description: Hourly PV profile
+    value: "PVGIS typical year (multi-year average per month and hour)"
+    unit: kWh/kWp per hour
+    sensitivity: ["PVGIS most recent complete year"]
+    source: "PVGIS (JRC), downloaded in Phase 2"
+    source_type: real
+    used_by: [data]
+
+  - id: pv_losses
+    group: pv
+    description: PV system losses
+    value: 14
+    unit: "%"
+    sensitivity: {low: 10, high: 18}
+    source: "PVGIS default"
+    source_type: estimate
+    used_by: [data]
+
+  - id: pv_azimuth
+    group: pv
+    description: PV orientation
+    value: south
+    unit: "-"
+    sensitivity: ["south", "east-west"]
+    source: "Assumption of the approved sheet 17/11/2026 (roof pitch)"
+    source_type: assumption
+    used_by: [data]
+
+  - id: pv_tilt
+    group: pv
+    description: PV tilt
+    value: PVGIS optimal angle
+    unit: deg
+    source: "Default proposed in the specification (Sect. 3.5), to confirm with Ema"
+    source_type: design_choice
+    status: to_verify
+    used_by: [data]
+
+  # ================================================================ A.3 Orders and service
+  - id: cutoff_hour
+    group: orders
+    symbol: "c"
+    description: Shipping cut-off
+    value: 16
+    unit: "h (clock)"
+    sensitivity: [14, 18]
+    source: "Ema's decision 17/11/2026"
+    source_type: assumption
+    used_by: [model]
+
+  - id: order_share_previous_evening
+    group: orders
+    description: Share of the daily picks whose orders arrive the evening before (available at shift start)
+    value: 50
+    unit: "%"
+    sensitivity: {to_be_defined: "'more or less predictable' variants to define"}
+    source: "Synthetic arrival profile of the approved sheet 17/11/2026; no open dataset found"
+    source_type: assumption
+    used_by: [model]
+
+  - id: order_arrival_start
+    group: orders
+    description: First hour of same-day order arrivals (uniform, slots 08-09 to 12-13)
+    value: 8
+    unit: "h (clock)"
+    sensitivity: {to_be_defined: "'more or less predictable' variants to define"}
+    source: "Synthetic arrival profile of the approved sheet 17/11/2026; no open dataset found"
+    source_type: assumption
+    used_by: [model]
+
+  - id: order_arrival_end
+    group: orders
+    description: End of same-day order arrivals (last slot 12-13)
+    value: 13
+    unit: "h (clock)"
+    sensitivity: {to_be_defined: "'more or less predictable' variants to define"}
+    source: "Synthetic arrival profile of the approved sheet 17/11/2026; no open dataset found"
+    source_type: assumption
+    used_by: [model]
+
+  - id: predictable_share
+    group: orders
+    symbol: "\\sigma"
+    description: Predictable share of each order group
+    value: 30
+    unit: "%"
+    sensitivity: {low: 10, high: 50}
+    source: "Assumption of the approved sheet 17/11/2026"
+    source_type: assumption
+    used_by: [model]
+
+  - id: prepick_lead
+    group: orders
+    symbol: "H"
+    description: Maximum pre-picking lead
+    value: 4
+    unit: h
+    sensitivity: {low: 2, high: 6}
+    source: "Ema's decision 17/11/2026 ('a few hours')"
+    source_type: design_choice
+    used_by: [model]
+
+  - id: inbound_start
+    group: orders
+    description: Start of inbound arrivals u_t (uniform)
+    value: 6
+    unit: "h (clock)"
+    sensitivity: {to_be_defined: "'concentrated in the morning' variant to define"}
+    source: "Assumption of the approved sheet 17/11/2026"
+    source_type: assumption
+    used_by: [model]
+
+  - id: inbound_end
+    group: orders
+    description: End of inbound arrivals u_t (uniform)
+    value: 14
+    unit: "h (clock)"
+    sensitivity: {to_be_defined: "'concentrated in the morning' variant to define"}
+    source: "Assumption of the approved sheet 17/11/2026"
+    source_type: assumption
+    used_by: [model]
+
+  - id: buffer_max
+    group: orders
+    symbol: "\\bar B"
+    description: Maximum buffer of pallets picked for orders not yet arrived
+    value: 40
+    unit: pallets
+    sensitivity: {low: 20, high: 80}
+    source: "Assumption of the approved sheet 17/11/2026"
+    source_type: assumption
+    used_by: [model]
+
+  - id: stock_initial_days
+    group: orders
+    description: Initial (and final) stock of the picking area
+    value: 1
+    unit: days of consumption
+    sensitivity: {to_be_defined: "no range in the approved sheet"}
+    source: "Assumption of the approved sheet 17/11/2026"
+    source_type: assumption
+    used_by: [model]
+
+  - id: stock_min_days
+    group: orders
+    description: Minimum stock of the picking area
+    value: 0.3
+    unit: days of consumption
+    sensitivity: {low: 0.1, high: 0.5}
+    source: "Assumption of the approved sheet 17/11/2026"
+    source_type: assumption
+    used_by: [model]
+
+  - id: stock_initial
+    group: orders
+    symbol: "S_0"
+    description: Initial (and final) stock of the picking area
+    value: null
+    formula: "stock_initial_days * n_picks"
+    unit: picks covered
+    source: "Days of consumption x picks per day (spec Sect. 5.5, V3)"
+    source_type: derived
+    used_by: [model]
+
+  - id: stock_min
+    group: orders
+    symbol: "S^{min}"
+    description: Minimum stock of the picking area
+    value: null
+    formula: "stock_min_days * n_picks"
+    unit: picks covered
+    source: "Days of consumption x picks per day (spec Sect. 5.5, V3)"
+    source_type: derived
+    used_by: [model]
+
+  - id: kappa
+    group: orders
+    symbol: "\\kappa"
+    description: Picks covered by one replenishment
+    value: null
+    formula: "n_picks / n_replenishment"
+    unit: picks
+    source: "Approved formula 650/100 (sheet 17/11/2026)"
+    source_type: derived
+    used_by: [model]
+
+  # ================================================================ A.4 Renewable energy community
+  - id: rec_member_set
+    group: rec
+    description: REC members besides the warehouse
+    value: "50 households + 3 tertiary businesses"
+    unit: "-"
+    sensitivity: ["enterprises only"]
+    source: "Ema's decision 17/11/2026"
+    source_type: design_choice
+    used_by: [rec]
+
+  - id: n_households
+    group: rec
+    description: Households in the REC
+    value: 50
+    unit: households
+    source: "Ema's decision 17/11/2026"
+    source_type: design_choice
+    used_by: [rec]
+
+  - id: n_businesses
+    group: rec
+    description: Small tertiary businesses in the REC (bar, shop, office)
+    value: 3
+    unit: businesses
+    source: "Ema's decision 17/11/2026"
+    source_type: design_choice
+    used_by: [rec]
+
+  - id: household_profile
+    group: rec
+    description: Hourly household load profile
+    value: null
+    unit: kWh per hour
+    sensitivity: ["-20%", "+20%"]
+    source: "Besagni, Premoli Vilà, Borgarello (2020), Buildings 10(12) 217 (67 measured households): published only as figures; digitise or replace (Ema to decide)"
+    source_type: literature
+    status: to_be_provided
+    used_by: [rec]
+
+  - id: household_kwh
+    group: rec
+    description: Annual consumption per household
+    value: 2700
+    unit: kWh/yr
+    sensitivity: {low: 2000, high: 3500}
+    source: "ARERA typical domestic customer (2,700 kWh/yr, 3 kW)"
+    source_type: real
+    used_by: [rec]
+
+  - id: business_mwh
+    group: rec
+    description: Annual consumption per small business
+    value: 20
+    unit: MWh/yr
+    sensitivity: {low: 10, high: 40}
+    source: "Assumption of the approved sheet 17/11/2026"
+    source_type: assumption
+    used_by: [rec]
+
+  - id: business_profile
+    group: rec
+    description: Hourly profile of the small businesses
+    value: "ELMAS tertiary clusters"
+    unit: kWh per hour
+    sensitivity: ["other ELMAS clusters"]
+    source: "ELMAS dataset (2023), Scientific Data; figshare doi:10.6084/m9.figshare.23889780 (CC BY 4.0)"
+    source_type: real
+    used_by: [rec, data]
+
+  - id: w_rec_annual
+    group: rec
+    description: Annual consumption of the other REC members
+    value: null
+    formula: "n_households * household_kwh / KWH_PER_MWH + n_businesses * business_mwh"
+    unit: MWh/yr
+    source: "Sum of the members' consumption (sheet 17/11/2026: about 195)"
+    source_type: derived
+    used_by: [rec]
+
+  # ================================================================ A.5 Incentives and prices
+  - id: tip_fixed
+    group: incentives
+    description: Premium tariff, fixed part
+    value: 80
+    unit: EUR/MWh
+    source: "DM 414/2023 and DM 127/2025"
+    source_type: real
+    used_by: [rec]
+
+  - id: tip_var_reference
+    group: incentives
+    description: Premium tariff, reference price of the variable part max(0, ref - Pz)
+    value: 180
+    unit: EUR/MWh
+    source: "DM 414/2023 and DM 127/2025"
+    source_type: real
+    used_by: [rec]
+
+  - id: tip_var_cap
+    group: incentives
+    description: Premium tariff, maximum of the variable part
+    value: 40
+    unit: EUR/MWh
+    source: "DM 414/2023 and DM 127/2025"
+    source_type: real
+    used_by: [rec]
+
+  - id: tip_regional_bonus
+    group: incentives
+    description: Regional correction of the premium tariff (Centre)
+    value: 4
+    unit: EUR/MWh
+    sensitivity: [0, 10]
+    source: "DM 414/2023 and DM 127/2025 (Centre 4; South 0, North 10)"
+    source_type: real
+    used_by: [rec]
+
+  - id: theta_enterprise
+    group: incentives
+    symbol: "\\theta"
+    description: Maximum share of shared energy whose incentive may go to enterprises
+    value: 55
+    unit: "%"
+    source: "DM 414/2023 and DM 127/2025"
+    source_type: real
+    used_by: [rec]
+
+  - id: zonal_price
+    group: incentives
+    symbol: "Pz_t"
+    description: Hourly zonal price, Centre-North, last complete year
+    value: "GME hourly prices"
+    unit: EUR/MWh
+    sensitivity: ["-30%", "+30%"]
+    source: "GME (Gestore dei Mercati Energetici), downloaded in Phase 2"
+    source_type: real
+    used_by: [rec, data]
+
+  - id: pi_arera
+    group: incentives
+    symbol: "\\pi^{ARERA}"
+    description: ARERA valorisation of shared energy
+    value: 8
+    unit: EUR/MWh
+    sensitivity: {low: 6, high: 11}
+    source: "TRASe component in low voltage, updated by ARERA (TIAD); 'about 8 EUR/MWh' in literature (PoliTo thesis). Monthly value may be read from ARERA tables"
+    source_type: estimate
+    used_by: [rec]
+
+  - id: beta_warehouse
+    group: incentives
+    symbol: "\\beta"
+    description: Warehouse share of the REC incentive
+    value: 50
+    unit: "%"
+    sensitivity: {low: 0, high: 100}
+    source: "REC by-laws, not known (approved sheet 17/11/2026)"
+    source_type: assumption
+    used_by: [rec]
+
+  # ================================================================ A.6 Investment and economics
+  - id: pv_cost
+    group: economics
+    description: Turnkey PV cost, 100-250 kW
+    value: 1000
+    unit: EUR/kWp
+    sensitivity: {low: 700, high: 1200}
+    source: "Between IEA PVPS Italy 2023 (1,100-1,350, typical 1,180) and 2026 commercial prices (675-750)"
+    source_type: estimate
+    used_by: [economics]
+
+  - id: pv_om
+    group: economics
+    description: PV operation and maintenance
+    value: 12
+    unit: EUR/kWp/yr
+    sensitivity: {low: 8, high: 15}
+    source: "solareindustriale.it 2026 (commercial)"
+    source_type: estimate
+    used_by: [economics]
+
+  - id: pv_insurance
+    group: economics
+    description: PV insurance
+    value: 3
+    unit: EUR/kWp/yr
+    sensitivity: {low: 2, high: 4}
+    source: "solareindustriale.it 2026 (commercial)"
+    source_type: estimate
+    used_by: [economics]
+
+  - id: pv_life
+    group: economics
+    description: Useful life of the PV investment
+    value: 20
+    unit: years
+    sensitivity: [20, 25]
+    source: "Equal to the REC incentive duration (DM 414/2023)"
+    source_type: design_choice
+    used_by: [economics]
+
+  - id: investment_incentive
+    group: economics
+    description: Investment incentive on the PV cost
+    value: 0
+    unit: "% of cost"
+    sensitivity: [20, 30, 40]
+    source: "Hypothetical future scheme (PNRR excluded), Ema's decision 17/11/2026"
+    source_type: assumption
+    used_by: [economics]
+
+  - id: rec_fee
+    group: economics
+    description: REC membership fee (condition C)
+    value: 0
+    unit: EUR/yr
+    sensitivity: {low: 0, high: 100}
+    source: "Assumption of the approved sheet 17/11/2026"
+    source_type: assumption
+    used_by: [economics]
+
+  - id: retail_price
+    group: economics
+    description: Retail electricity price paid by the warehouse
+    value: null
+    unit: EUR/MWh
+    source: "To be provided by Ema (e.g. ARERA or Eurostat non-household prices)"
+    status: to_be_provided
+    used_by: [economics]
+
+  - id: discount_rate
+    group: economics
+    description: Discount rate for NPV (condition B)
+    value: null
+    unit: "%"
+    source: "To be provided by Ema; until then only simple payback is reported"
+    status: to_be_provided
+    used_by: [economics]
+
+  - id: ext_plant_kwp
+    group: economics
+    description: Size of the other member's PV plant (condition C)
+    value: null
+    unit: kWp
+    source: "To be provided by Ema before Phase 5"
+    status: to_be_provided
+    used_by: [economics]
+
+  - id: grid_emission_factor
+    group: economics
+    description: Grid emission factor (optional CO2 KPI)
+    value: null
+    unit: kgCO2/kWh
+    source: "To be provided by Ema; KPI hidden until then"
+    status: to_be_provided
+    used_by: [report]
+
+  # ================================================================ Reference policies (spec Sect. 5.8)
+  - id: p0_internal_windows
+    group: policies
+    description: "P0 current practice: windows of internal missions (first and last shift hours)"
+    value: [[6, 8], [20, 22]]
+    unit: "h (clock)"
+    sensitivity: {to_be_defined: "no range in the specification"}
+    source: "Specification Sect. 5.8 (current practice, assumption)"
+    source_type: assumption
+    used_by: [model]
+
+  - id: p1_sun_window
+    group: policies
+    description: "P1 follow the sun: window for shiftable missions and charging"
+    value: [11, 15]
+    unit: "h (clock)"
+    sensitivity: {to_be_defined: "no range in the specification"}
+    source: "Specification Sect. 1 and 5.8 (sunny hours about 11:00-15:00)"
+    source_type: assumption
+    used_by: [model]
+
+  # ================================================================ Method
+  - id: pareto_points
+    group: method
+    symbol: "K"
+    description: Points of the epsilon-constraint grid
+    value: 25
+    unit: points
+    sensitivity: {low: 20, high: 30}
+    source: "Specification Sect. 5.7"
+    source_type: design_choice
+    used_by: [model]
+
+checks:
+  - id: site_consumption_split
+    description: Split of warehouse consumption (lighting, handling, other)
+    expected: {lighting: 29, handling: 14, other: 57}
+    unit: "%"
+    source: "Perotti & Dobers, Polimi green warehousing benchmark (ambient: lighting + handling > 60%)"
+    source_type: real
+
+  - id: annual_site_consumption
+    description: Annual site consumption (sum of the base-case balance)
+    expected: {about: 100, low: 70, high: 150}
+    unit: MWh/yr
+    source: "Sum of the base-case balance, approved sheet 17/11/2026"
+    source_type: estimate
+    notes: "Computed by the model in Phase 3 and compared with this range."
+
+  - id: daily_balance
+    description: Base-case daily balance per working day
+    expected: {missions_net: 32, missions_gross: 45, avsrs_base: 48, forklift_charging: 80, lighting: 60, offices_it: 80, other: 40}
+    unit: kWh/day
+    source: "Approved sheet 17/11/2026"
+    source_type: estimate
+    status: to_verify
+    notes: "Mission values refer to e = 30 Wh; with Guerrazzi et al. (2019) (18/11) they become about 31 gross and 22 net. Lighting 60 vs 4 kW x 16 h = 64."
+
+  - id: offshift_standby_annual
+    description: Night and weekend stand-by consumption
+    expected: {about: 9}
+    unit: MWh/yr
+    source: "Approved sheet 17/11/2026"
+    source_type: estimate
+
+  - id: shiftable_energy_daily
+    description: Energy of shiftable activities per working day
+    expected: {about: 90}
+    unit: kWh/day
+    source: "Approved sheet 17/11/2026"
+    source_type: estimate
+
+  - id: specific_yield
+    description: PV specific yield, Centre Italy
+    expected: {about: 1300, low: 1000, high: 1550}
+    unit: kWh/kWp/yr
+    source: "solareindustriale.it 2026; replaced by the PVGIS value in Phase 2 (expected 1,200-1,350)"
+    source_type: estimate
+
+consistency:
+  - "n_inbound + n_picks + n_replenishment + n_reslotting == missions_per_day"
+  - "n_active_shuttles <= n_tiers"
+  - "shift_start < cutoff_hour <= shift_end"
+  - "stock_min_days <= stock_initial_days"
+  - "inbound_start >= shift_start and inbound_end <= shift_end"

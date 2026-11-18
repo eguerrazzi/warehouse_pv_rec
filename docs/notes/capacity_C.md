@@ -1,6 +1,9 @@
 # Hourly capacity C of the AVS/RS — reading of Guerrazzi et al. (2019)
 
-Status: **open, decision needed from Ema** (2026-11-18). Nothing here is used by the model yet.
+Status: **decided for the prototype** (2026-11-18, delegated by Ema): option B, implemented in
+`config/params/base.yaml` (`mission_cycle_time`, `n_active_shuttles`, `capacity_c`), status `to_verify`.
+C = 5 × 3600 / 45.9 s = 392 missions/h; sensitivity on the number of concurrent shuttles (1–5).
+To be checked with the Guerrazzi & Vandin simulator or Cassioli data when available.
 
 Source: Guerrazzi E., Mininno V., Aloini D., Dulmin R., Scarpelli C., Sabatini M. (2019).
 Energy Evaluation of Deep-Lane Autonomous Vehicle Storage and Retrieval System.
@@ -51,3 +54,12 @@ shuttle + satellite cycle, **not by the lifts**.
 
 Confirmed by the paper: 2,730 locations, 5 tiers, 2 lifts (p. 9, Table A1); installed power 44.6 kW
 (p. 9); recovery 28.3% (p. 11); 15–16 active hours (p. 9); ≈ 1,200 missions/day (Table A6).
+
+## Online search (2026-11-18)
+
+No recent peer-reviewed source with throughput of a deep-lane pallet AVS/RS of this size was found.
+Indicative ranges only: vendor and patent figures of 20–45 pallet moves/h per shuttle lane, and system
+figures of 200–680 pallets/h for larger installations (supplychain247.com, warehouse-tech-navigator
+project page, US patent family "Storage system and methods"). D'Antonio et al. (2018, 2019,
+IJAMT) give analytical cycle-time models for deep-lane and multi-shuttle AVS/RS; the full text could not
+be read here. These sources are not used as parameter values.

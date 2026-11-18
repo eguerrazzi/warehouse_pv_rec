@@ -1,0 +1,39 @@
+# Fixture: the AVS/RS capacity cannot be derived because one input is missing,
+# and one entry is a test placeholder. Used to test the provenance gate.
+meta:
+  name: missing_c
+parameters:
+  - id: mission_cycle_time
+    group: capacity
+    description: Mean time per mission
+    value: 45
+    unit: s/mission
+    source: test value
+    source_type: placeholder_test_only
+    used_by: [model]
+  - id: n_active_shuttles
+    group: capacity
+    description: Tier shuttles working concurrently
+    value: null
+    unit: shuttles
+    source: "To be provided by Ema"
+    status: to_be_provided
+    used_by: [model]
+  - id: capacity_c
+    group: capacity
+    symbol: C
+    description: Hourly capacity of the AVS/RS
+    value: null
+    formula: "n_active_shuttles * SECONDS_PER_HOUR / mission_cycle_time"
+    unit: missions/h
+    source: test formula
+    source_type: derived
+    used_by: [model]
+  - id: household_kwh
+    group: rec
+    description: Annual consumption per household
+    value: 2700
+    unit: kWh/yr
+    source: test value
+    source_type: placeholder_test_only
+    used_by: [rec]

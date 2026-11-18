@@ -1,0 +1,71 @@
+# Schema of the parameter registry (specification Section 3).
+# The loader (src/wpvrec/params/) reads the source types and allowed values from this file.
+
+source_types:
+  real:
+    label_it: Reale
+    label_en: Real
+    meaning: measured value, public dataset or official regulation
+  literature:
+    label_it: Letteratura
+    label_en: Literature
+    meaning: value published in a paper, even if obtained by simulation
+  derived:
+    label_it: Derivato
+    label_en: Derived
+    meaning: computed by code from other registry entries with the stated formula
+  estimate:
+    label_it: Stima
+    label_en: Estimate
+    meaning: our value, anchored to sources or orders of magnitude cited in the entry
+  assumption:
+    label_it: Ipotesi
+    label_en: Assumption
+    meaning: our value without a direct source; must have a sensitivity range
+    requires_sensitivity: true
+  design_choice:
+    label_it: Scelta di progetto
+    label_en: Design choice
+    meaning: study design decision, not a measurable datum
+  placeholder_test_only:
+    label_it: "—"
+    label_en: Test placeholder
+    meaning: allowed only in tests/fixtures/, never in a run that produces results
+    fixtures_only: true
+
+statuses: [confirmed, to_verify, to_be_derived, to_be_provided]
+
+# Who uses the entry; the provenance gate checks the entries of the run kind.
+used_by: [model, rec, economics, data, report]
+
+groups:
+  warehouse: Warehouse and AVS/RS
+  capacity: AVS/RS capacity and congestion
+  forklifts: Forklifts and docks
+  loads: Fixed loads
+  pv: Photovoltaics
+  orders: Orders and service
+  rec: Renewable energy community
+  incentives: Incentives and prices
+  economics: Investment and economics
+  policies: Reference policies
+  method: Solution method
+
+# Fields of a parameter entry.
+fields:
+  id: unique snake_case identifier, used in formulas
+  group: one of the groups above
+  symbol: symbol used in the paper (optional)
+  description: what the parameter is
+  value: number, text or list; null only when status is to_be_derived or to_be_provided; null for derived entries (computed)
+  unit: unit of measure ("-" if dimensionless)
+  sensitivity: "{low, high} | list of values | {scale_with: <id>} | {to_be_defined: <what is missing>}"
+  source: where the value comes from (page/table/equation when possible)
+  source_type: one of source_types
+  status: one of statuses
+  formula: only for derived entries; arithmetic on other ids and the constants of wpvrec.units
+  used_by: list of used_by values
+  notes: free text
+
+# Fields of a check entry (values used only to check results, never as model inputs).
+check_fields: [id, description, expected, unit, source, source_type, status, notes]
