@@ -16,11 +16,11 @@
 | Warehouse and AVS/RS | Re-slotting missions per day | n_{slot} | 100 | missions/day | scaled with missions_per_day | Mission split of the approved sheet (from the 25% shiftable share), confirmed by Ema 17/11/2026 | Ipotesi | confirmed |
 | Warehouse and AVS/RS | Share of shiftable missions (pre-picking, replenishment, re-slotting) |  | 25 | % | 10–40 | Shiftable-activities document (project notes, 17/11/2026) | Ipotesi | confirmed |
 | Warehouse and AVS/RS | Mass of a unit load (pallet) | m_{UL} | 1200 | kg | — | Guerrazzi et al. (2019), Table A5 p. 13 | Letteratura | confirmed |
-| Warehouse and AVS/RS | Gross energy per AVS/RS mission, as published (mean over storage and picking) |  | 75 | kJ/mission | 70.92–146.2 | Guerrazzi et al. (2019), Table 2 p. 9 (energy consumed per UL: mean 75, min 70, max 80 kJ). Range: Ekren, Akpunar, Lerher (2016), 0.0197-0.0406 kWh per transaction | Letteratura | confirmed |
+| Warehouse and AVS/RS | Gross energy per AVS/RS mission, as published (mean over storage and picking) |  | 75 | kJ/mission | 70.92–146.2 | Guerrazzi et al. (2019), Table 2 p. 9 (energy consumed per UL: mean 75, min 70, max 80 kJ). Range: Ekren, Akpunar, Lerher (2016), 0.0197-0.0406 kWh per transaction | Letteratura | to_verify |
 | Warehouse and AVS/RS | Gross energy per AVS/RS mission | e | 20.83 | Wh/mission | — | Unit conversion of e_mission_gross_kj [formula: e_mission_gross_kj / KJ_PER_WH] | Derivato | confirmed |
 | Warehouse and AVS/RS | Share of consumed energy recovered by regenerative braking of the lifts | \varrho | 28.3 | % of consumed energy | 0–35 | Guerrazzi et al. (2019), Sect. 6 p. 11 and Fig. 4 (28.3%) | Letteratura | confirmed |
 | Warehouse and AVS/RS | Net energy per AVS/RS mission | e^n | 14.94 | Wh/mission | — | e (1 - rho), approved formula (sheet 17/11/2026) [formula: e_mission_gross * (1 - regen_share / PERCENT)] | Derivato | confirmed |
-| Warehouse and AVS/RS | Energy per mission, SBS/RS tote variant |  | 0.7 | Wh/mission | 0.65–0.71 | Lerher, Ekren, Akpunar (as cited in the approved sheet 17/11/2026) | Letteratura | to_verify |
+| Warehouse and AVS/RS | Energy per mission, SBS/RS tote variant |  | 0.7 | Wh/mission | 0.65–0.71 | Lerher, Ekren, Akpunar (2016), Simulation-based Energy and Cycle Time Analysis of SBS/RS, 14th IMHRC, Karlsruhe, Table 2 p. 10: 0.000649-0.000709 kWh per transaction (14 tiers, lift 2 m/s) | Letteratura | confirmed |
 | AVS/RS capacity and congestion | Total energy of one simulated day of the Cassioli AVS/RS (mean of 100 runs) |  | 88268 | kJ | — | Guerrazzi et al. (2019), Table 2 p. 9 | Letteratura | confirmed |
 | AVS/RS capacity and congestion | Hourly energy of the simulated day (mean of 100 runs) |  | 5772 | kJ/h | — | Guerrazzi et al. (2019), Table 2 p. 9 | Letteratura | confirmed |
 | AVS/RS capacity and congestion | Missions of the simulated day (600 storages + 600 retrievals) |  | 1200 | missions | — | Guerrazzi et al. (2019), Table A6 p. 13 | Letteratura | confirmed |
@@ -32,9 +32,9 @@
 | Forklifts and docks | Lithium-ion forklifts serving the docks | \|F\| | 4 | forklifts | 2–8 | Assumption of the approved sheet 17/11/2026 | Ipotesi | confirmed |
 | Forklifts and docks | Use of each forklift at the docks |  | 5 | h/day per forklift | 3–8 | Assumption of the approved sheet 17/11/2026 | Ipotesi | confirmed |
 | Forklifts and docks | Total dock workload | \sum_t h_t | 20 | cart-h/day | — | Forklifts x use per forklift (sheet 17/11/2026) [formula: n_forklifts * forklift_use_hours] | Derivato | confirmed |
-| Forklifts and docks | Share of the dock workload proportional to inbound arrivals u_t (rest uniform over the outbound window) |  | 50 | % | to be defined | Proposed default, specification Sect. 3.5 (capped at \|F\| per hour) | Ipotesi | to_verify |
-| Forklifts and docks | Start of the outbound dock window |  | 6 | h (clock) | to be defined | Proposed default, specification Sect. 3.5 (outbound before the cut-off) | Ipotesi | to_verify |
-| Forklifts and docks | End of the outbound dock window |  | 16 | h (clock) | to be defined | Proposed default, specification Sect. 3.5 (outbound before the cut-off) | Ipotesi | to_verify |
+| Forklifts and docks | Share of the dock workload proportional to inbound arrivals u_t (rest uniform over the outbound window) |  | 50 | % | 37.5–62.5 | Proposed default, specification Sect. 3.5 (capped at \|F\| per hour) | Ipotesi | to_verify |
+| Forklifts and docks | Start of the outbound dock window |  | 6 | h (clock) | 6–7 | Proposed default, specification Sect. 3.5 (outbound before the cut-off) | Ipotesi | to_verify |
+| Forklifts and docks | End of the outbound dock window |  | 16 | h (clock) | 15–17 | Proposed default, specification Sect. 3.5 (outbound before the cut-off) | Ipotesi | to_verify |
 | Forklifts and docks | Forklift consumption per hour of use | k | 4 | kWh/h | 3–5 | Order of magnitude for 2-2.5 t trucks (approved sheet 17/11/2026); to verify on VDI 2198 datasheets | Stima | to_verify |
 | Forklifts and docks | Forklift battery capacity | Q | 25 | kWh | 20–40 | Datasheets of 2-2.5 t lithium forklifts (approved sheet 17/11/2026); to verify | Stima | to_verify |
 | Forklifts and docks | Charger power per forklift | P^{ch} | 8 | kW | 4–12 | Datasheets (approved sheet 17/11/2026); to verify | Stima | to_verify |
@@ -43,25 +43,31 @@
 | Forklifts and docks | Hours in which charging is allowed | \chi_t | shifts | - | shifts; shifts and night | Within shifts, confirmed by Ema 17/11/2026 | Scelta di progetto | confirmed |
 | Fixed loads | AVS/RS base (stand-by) load during shifts |  | 3 | kW | 1.5–4 | Ertl & Günthner (2016), Logistics Journal: 0.5-1.25 kW per machine | Stima | confirmed |
 | Fixed loads | Lighting during shifts |  | 4 | kW | — | Estimate checked with the Perotti & Dobers split (29% lighting), approved sheet 17/11/2026 | Stima | confirmed |
-| Fixed loads | Offices, IT and HVAC during shifts |  | 5 | kW | to be defined | Assumption of the approved sheet 17/11/2026 | Ipotesi | confirmed |
-| Fixed loads | Other loads during shifts (doors, conveyors, wrappers, compressor) |  | 2.5 | kW | to be defined | Assumption of the approved sheet 17/11/2026 | Ipotesi | confirmed |
-| Fixed loads | Site stand-by load outside shifts and on weekends |  | 2 | kW | to be defined | Assumption of the approved sheet 17/11/2026 | Ipotesi | confirmed |
+| Fixed loads | Offices, IT and HVAC during shifts |  | 5 | kW | 3.75–6.25 | Assumption of the approved sheet 17/11/2026 | Ipotesi | confirmed |
+| Fixed loads | Other loads during shifts (doors, conveyors, wrappers, compressor) |  | 2.5 | kW | 1.875–3.125 | Assumption of the approved sheet 17/11/2026 | Ipotesi | confirmed |
+| Fixed loads | Site stand-by load outside shifts and on weekends |  | 2 | kW | 1.5–2.5 | Assumption of the approved sheet 17/11/2026 | Ipotesi | confirmed |
 | Fixed loads | Hourly shape of the fixed load within shifts |  | flat | - | flat; ELMAS tertiary/logistics shape normalised to the same daily energy | Default of the approved sheet 17/11/2026; option: ELMAS (Scientific Data 2023), French data adapted | Scelta di progetto | confirmed |
 | Photovoltaics | Installed PV power |  | 80 | kWp | 40–200 | Ema's decision 17/11/2026: about 100 MWh/yr / 1,300 kWh/kWp, rounded | Scelta di progetto | confirmed |
 | Photovoltaics | Hourly PV profile |  | PVGIS typical year (multi-year average per month and hour) | kWh/kWp per hour | PVGIS most recent complete year | PVGIS (JRC), downloaded in Phase 2 | Reale | confirmed |
 | Photovoltaics | PV system losses |  | 14 | % | 10–18 | PVGIS default | Stima | confirmed |
 | Photovoltaics | PV orientation |  | south | - | south; east-west | Assumption of the approved sheet 17/11/2026 (roof pitch) | Ipotesi | confirmed |
-| Photovoltaics | PV tilt |  | PVGIS optimal angle | deg | — | Default proposed in the specification (Sect. 3.5), to confirm with Ema | Scelta di progetto | to_verify |
+| Photovoltaics | PV tilt |  | PVGIS optimal angle | deg | — | Default proposed in the specification (Sect. 3.5), confirmed by Ema 18/11/2026 | Scelta di progetto | confirmed |
 | Orders and service | Shipping cut-off | c | 16 | h (clock) | 14; 18 | Ema's decision 17/11/2026 | Ipotesi | confirmed |
-| Orders and service | Share of the daily picks whose orders arrive the evening before (available at shift start) |  | 50 | % | to be defined | Synthetic arrival profile of the approved sheet 17/11/2026; no open dataset found | Ipotesi | confirmed |
-| Orders and service | First hour of same-day order arrivals (uniform, slots 08-09 to 12-13) |  | 8 | h (clock) | to be defined | Synthetic arrival profile of the approved sheet 17/11/2026; no open dataset found | Ipotesi | confirmed |
-| Orders and service | End of same-day order arrivals (last slot 12-13) |  | 13 | h (clock) | to be defined | Synthetic arrival profile of the approved sheet 17/11/2026; no open dataset found | Ipotesi | confirmed |
+| Orders and service | Share of the daily picks whose orders arrive the evening before (available at shift start) |  | 50 | % | 37.5–62.5 | Synthetic arrival profile of the approved sheet 17/11/2026; no open dataset found | Ipotesi | confirmed |
+| Orders and service | First hour of same-day order arrivals (uniform, slots 08-09 to 12-13) |  | 8 | h (clock) | 7–9 | Synthetic arrival profile of the approved sheet 17/11/2026; no open dataset found | Ipotesi | confirmed |
+| Orders and service | End of same-day order arrivals (last slot 12-13) |  | 13 | h (clock) | 12–14 | Synthetic arrival profile of the approved sheet 17/11/2026; no open dataset found | Ipotesi | confirmed |
+| Orders and service | Shape of same-day order arrivals within [order_arrival_start, order_arrival_end] |  | uniform | - | truncated_normal | Approved sheet 17/11/2026 (uniform); parametric shapes requested by Ema 18/11/2026 | Ipotesi | confirmed |
+| Orders and service | Peak of same-day order arrivals (truncated-normal shape) |  | 12.5 | h (clock) | 11.5–13.5 | Guerrazzi & Vandin (2026), arXiv:2611.14371v2, Sect. 3.1 p. 12 and Table 4 p. 28 (mu = 12.5 h, citing Liu et al. 2020) | Letteratura | confirmed |
+| Orders and service | Standard deviation of same-day order arrivals (truncated-normal shape) |  | 2 | h | 1.5–2.5 | Guerrazzi & Vandin (2026), arXiv:2611.14371v2, Sect. 3.1 p. 12 and Table 4 p. 28 (sigma = 2 h) | Letteratura | confirmed |
 | Orders and service | Predictable share of each order group | \sigma | 30 | % | 10–50 | Assumption of the approved sheet 17/11/2026 | Ipotesi | confirmed |
 | Orders and service | Maximum pre-picking lead | H | 4 | h | 2–6 | Ema's decision 17/11/2026 ('a few hours') | Scelta di progetto | confirmed |
-| Orders and service | Start of inbound arrivals u_t (uniform) |  | 6 | h (clock) | to be defined | Assumption of the approved sheet 17/11/2026 | Ipotesi | confirmed |
-| Orders and service | End of inbound arrivals u_t (uniform) |  | 14 | h (clock) | to be defined | Assumption of the approved sheet 17/11/2026 | Ipotesi | confirmed |
+| Orders and service | Start of inbound arrivals u_t (uniform) |  | 6 | h (clock) | 6–7 | Assumption of the approved sheet 17/11/2026 | Ipotesi | confirmed |
+| Orders and service | End of inbound arrivals u_t (uniform) |  | 14 | h (clock) | 13–15 | Assumption of the approved sheet 17/11/2026 | Ipotesi | confirmed |
+| Orders and service | Shape of inbound arrivals u_t within [inbound_start, inbound_end] |  | uniform | - | truncated_normal | Approved sheet 17/11/2026 (uniform; variant 'concentrated in the morning'); parametric shapes requested by Ema 18/11/2026 | Ipotesi | confirmed |
+| Orders and service | Peak of inbound arrivals ('concentrated in the morning' variant) |  | 8 | h (clock) | 7–9 | Assumption (18/11/2026) for the 'concentrated in the morning' variant of the sheet | Ipotesi | confirmed |
+| Orders and service | Standard deviation of inbound arrivals ('concentrated in the morning' variant) |  | 2 | h | 1.5–2.5 | Assumption (18/11/2026), same spread as order arrivals in Guerrazzi & Vandin (2026) | Ipotesi | confirmed |
 | Orders and service | Maximum buffer of pallets picked for orders not yet arrived | \bar B | 40 | pallets | 20–80 | Assumption of the approved sheet 17/11/2026 | Ipotesi | confirmed |
-| Orders and service | Initial (and final) stock of the picking area |  | 1 | days of consumption | to be defined | Assumption of the approved sheet 17/11/2026 | Ipotesi | confirmed |
+| Orders and service | Initial (and final) stock of the picking area |  | 1 | days of consumption | 0.75–1.25 | Assumption of the approved sheet 17/11/2026 | Ipotesi | confirmed |
 | Orders and service | Minimum stock of the picking area |  | 0.3 | days of consumption | 0.1–0.5 | Assumption of the approved sheet 17/11/2026 | Ipotesi | confirmed |
 | Orders and service | Initial (and final) stock of the picking area | S_0 | 650 | picks covered | — | Days of consumption x picks per day (spec Sect. 5.5, V3) [formula: stock_initial_days * n_picks] | Derivato | confirmed |
 | Orders and service | Minimum stock of the picking area | S^{min} | 195 | picks covered | — | Days of consumption x picks per day (spec Sect. 5.5, V3) [formula: stock_min_days * n_picks] | Derivato | confirmed |
@@ -69,7 +75,7 @@
 | Renewable energy community | REC members besides the warehouse |  | 50 households + 3 tertiary businesses | - | enterprises only | Ema's decision 17/11/2026 | Scelta di progetto | confirmed |
 | Renewable energy community | Households in the REC |  | 50 | households | — | Ema's decision 17/11/2026 | Scelta di progetto | confirmed |
 | Renewable energy community | Small tertiary businesses in the REC (bar, shop, office) |  | 3 | businesses | — | Ema's decision 17/11/2026 | Scelta di progetto | confirmed |
-| Renewable energy community | Hourly household load profile |  | — | kWh per hour | -20%; +20% | Besagni, Premoli Vilà, Borgarello (2020), Buildings 10(12) 217 (67 measured households): published only as figures; digitise or replace (Ema to decide) | Letteratura | to_be_provided |
+| Renewable energy community | Hourly household load profile |  | — | kWh per hour | -20%; +20% | Besagni, Premoli Vilà, Borgarello (2020), Buildings 10(12) 217 (67 measured households): published only as figures; to digitise in Phase 2 (Ema 18/11/2026) | Letteratura | to_be_derived |
 | Renewable energy community | Annual consumption per household |  | 2700 | kWh/yr | 2000–3500 | ARERA typical domestic customer (2,700 kWh/yr, 3 kW) | Reale | confirmed |
 | Renewable energy community | Annual consumption per small business |  | 20 | MWh/yr | 10–40 | Assumption of the approved sheet 17/11/2026 | Ipotesi | confirmed |
 | Renewable energy community | Hourly profile of the small businesses |  | ELMAS tertiary clusters | kWh per hour | other ELMAS clusters | ELMAS dataset (2023), Scientific Data; figshare doi:10.6084/m9.figshare.23889780 (CC BY 4.0) | Reale | confirmed |
@@ -88,10 +94,14 @@
 | Investment and economics | Useful life of the PV investment |  | 20 | years | 20; 25 | Equal to the REC incentive duration (DM 414/2023) | Scelta di progetto | confirmed |
 | Investment and economics | Investment incentive on the PV cost |  | 0 | % of cost | 20; 30; 40 | Hypothetical future scheme (PNRR excluded), Ema's decision 17/11/2026 | Ipotesi | confirmed |
 | Investment and economics | REC membership fee (condition C) |  | 0 | EUR/yr | 0–100 | Assumption of the approved sheet 17/11/2026 | Ipotesi | confirmed |
-| Investment and economics | Retail electricity price paid by the warehouse |  | — | EUR/MWh | — | To be provided by Ema (e.g. ARERA or Eurostat non-household prices) | — | to_be_provided |
-| Investment and economics | Discount rate for NPV (condition B) |  | — | % | — | To be provided by Ema; until then only simple payback is reported | — | to_be_provided |
-| Investment and economics | Size of the other member's PV plant (condition C) |  | — | kWp | — | To be provided by Ema before Phase 5 | — | to_be_provided |
-| Investment and economics | Grid emission factor (optional CO2 KPI) |  | — | kgCO2/kWh | — | To be provided by Ema; KPI hidden until then | — | to_be_provided |
-| Reference policies | P0 current practice: windows of internal missions (first and last shift hours) |  | 6, 8, 20, 22 | h (clock) | to be defined | Specification Sect. 5.8 (current practice, assumption) | Ipotesi | confirmed |
-| Reference policies | P1 follow the sun: window for shiftable missions and charging |  | 11, 15 | h (clock) | to be defined | Specification Sect. 1 and 5.8 (sunny hours about 11:00-15:00) | Ipotesi | confirmed |
+| Investment and economics | Non-household electricity price, Italy, 20-499 MWh/yr, excl. VAT and recoverable taxes, 2025-S1 |  | 0.2597 | EUR/kWh | — | Eurostat nrg_pc_205 (geo=IT, nrg_cons=MWH20-499, tax=X_VAT, currency=EUR), dataset updated 2026-10-19, retrieved 2026-11-18 | Reale | confirmed |
+| Investment and economics | Non-household electricity price, Italy, 20-499 MWh/yr, excl. VAT and recoverable taxes, 2025-S2 |  | 0.2377 | EUR/kWh | — | Eurostat nrg_pc_205 (geo=IT, nrg_cons=MWH20-499, tax=X_VAT, currency=EUR), dataset updated 2026-10-19, retrieved 2026-11-18 | Reale | confirmed |
+| Investment and economics | Retail electricity price paid by the warehouse (2025 mean of the two semesters) |  | 248.7 | EUR/MWh | 237.7–291.7 | Eurostat band IB (20-499 MWh/yr, about 100 MWh/yr for the warehouse), same reference year as the GME prices; sensitivity = min/max semesters 2023-S1..2026-S1 (Eurostat) [formula: (retail_price_2025s1 + retail_price_2025s2) / 2 * KWH_PER_MWH] | Derivato | confirmed |
+| Investment and economics | Discount rate for NPV (condition B), real terms |  | 5.6 | % | 5–6.7 | ARERA del. 513/2024/R/com, Allegato A, Tabella 11 p. 48: WACC 2025-2027 for electricity distribution and metering = 5.60% (real, pre-tax); sensitivity = range of Tabella 11 (all services, 2022-2027) | Stima | to_verify |
+| Investment and economics | Size of the other member's PV plant (condition C); same site and PVGIS profile as condition A |  | 80 | kWp | 40–200 | Assumption (Ema 18/11/2026: 'ipotizza tu'): same size and profile as the warehouse plant of condition A, for comparability | Ipotesi | confirmed |
+| Investment and economics | Emission factor of electricity consumption in Italy, 2023 (optional CO2 KPI) |  | 234.7 | gCO2/kWh | 198.9–293 | ISPRA Rapporto 413/2025, Le emissioni di CO2 nel settore elettrico nazionale e regionale, Tabella 1.3 p. 20-21 (consumi elettrici, 2023); range: 2024 preliminary (198.9) to 2022 (293.0) | Reale | confirmed |
+| Reference policies | P0 current practice: internal missions from shift start until this hour |  | 8 | h (clock) | 7–9 | Specification Sect. 5.8 (06-08, current practice, assumption) | Ipotesi | confirmed |
+| Reference policies | P0 current practice: internal missions and forklift charging from this hour until shift end |  | 20 | h (clock) | 19–21 | Specification Sect. 5.8 (20-22, current practice, assumption) | Ipotesi | confirmed |
+| Reference policies | P1 follow the sun: start of the window for shiftable missions and charging |  | 11 | h (clock) | 10–12 | Specification Sect. 1 and 5.8 (sunny hours about 11:00-15:00) | Ipotesi | confirmed |
+| Reference policies | P1 follow the sun: end of the window for shiftable missions and charging |  | 15 | h (clock) | 14–16 | Specification Sect. 1 and 5.8 (sunny hours about 11:00-15:00) | Ipotesi | confirmed |
 | Solution method | Points of the epsilon-constraint grid | K | 25 | points | 20–30 | Specification Sect. 5.7 | Scelta di progetto | confirmed |

@@ -9,7 +9,7 @@
 meta:
   name: base
   description: SME with a pallet deep-lane AVS/RS in Torrita di Siena (Tuscany), inspired by Guerrazzi et al. (2019) (Cassioli)
-  approved: "2026-11-17 (sheet); 2026-11-18 (C, energy per mission, pallet mass)"
+  approved: "2026-11-17 (sheet); 2026-11-18 (C, energy per mission, pallet mass, economics, ranges, profiles)"
 
 parameters:
   # ================================================================ A.1 Warehouse
@@ -189,8 +189,9 @@ parameters:
     sensitivity: {low: 70.92, high: 146.16}
     source: "Guerrazzi et al. (2019), Table 2 p. 9 (energy consumed per UL: mean 75, min 70, max 80 kJ). Range: Ekren, Akpunar, Lerher (2016), 0.0197-0.0406 kWh per transaction"
     source_type: literature
+    status: to_verify
     used_by: [model]
-    notes: "Was 30 Wh (Ekren et al. 2016) in the sheet of 17/11; Guerrazzi et al. (2019) adopted by Ema's decision 18/11/2026. Storing 98 kJ/UL, picking 52 kJ/UL (Table 2)."
+    notes: "Sensitivity range: the received Lerher, Ekren, Akpunar (2016) IMHRC paper reports 0.65-0.9 Wh (SBS/RS), not 0.0197-0.0406 kWh; source of the range to verify (paper request 5). Was 30 Wh (Ekren et al. 2016) in the sheet of 17/11; Guerrazzi et al. (2019) adopted by Ema's decision 18/11/2026. Storing 98 kJ/UL, picking 52 kJ/UL (Table 2)."
 
   - id: e_mission_gross
     group: warehouse
@@ -233,11 +234,10 @@ parameters:
     value: 0.7
     unit: Wh/mission
     sensitivity: {low: 0.65, high: 0.71}
-    source: "Lerher, Ekren, Akpunar (as cited in the approved sheet 17/11/2026)"
+    source: "Lerher, Ekren, Akpunar (2016), Simulation-based Energy and Cycle Time Analysis of SBS/RS, 14th IMHRC, Karlsruhe, Table 2 p. 10: 0.000649-0.000709 kWh per transaction (14 tiers, lift 2 m/s)"
     source_type: literature
-    status: to_verify
     used_by: [model]
-    notes: "Full reference (year, venue, table) to be completed."
+    notes: "Up to 0.0009 kWh with 16 tiers and lift 3 m/s (Fig. 6)."
 
   - id: avsrs_standby_kw
     group: loads
@@ -311,7 +311,7 @@ parameters:
     source_type: derived
     status: to_verify
     used_by: [model]
-    notes: "Lifts: 9-12 s per cycle, 300-400 missions/h each (eq. 1, Table A2), so not binding. n_active_shuttles = 1 gives 78.5 missions/h, infeasible for the base case."
+    notes: "Supporting evidence: Guerrazzi & Vandin (2026) Table 8, fleet utilisation below 10% with 1,000-1,529 missions/day on 10 shuttles; D'Antonio & Chiabert (2019) IJAMT 104:1919, Fig. 3: 25-145 UL/h for one lift serving 1-5 tier-to-tier shuttles (lift-bound). Lifts: 9-12 s per cycle, 300-400 missions/h each (eq. 1, Table A2), so not binding. n_active_shuttles = 1 gives 78.5 missions/h, infeasible for the base case."
 
   - id: rho_max
     group: capacity
@@ -372,10 +372,11 @@ parameters:
     description: Share of the dock workload proportional to inbound arrivals u_t (rest uniform over the outbound window)
     value: 50
     unit: "%"
-    sensitivity: {to_be_defined: "shape of h_t not fixed in the sheet; proposed default of spec Sect. 3.5 to confirm with Ema"}
+    sensitivity: {low: 37.5, high: 62.5}
     source: "Proposed default, specification Sect. 3.5 (capped at |F| per hour)"
     source_type: assumption
     status: to_verify
+    notes: "Generic range approved by Ema 18/11/2026 for assumptions without a range in the sheet: +/-25% (magnitudes), +/-1 h (clock times); shape of h_t explained to Ema 18/11/2026, default to confirm"
     used_by: [model]
 
   - id: dock_outbound_start
@@ -383,10 +384,11 @@ parameters:
     description: Start of the outbound dock window
     value: 6
     unit: "h (clock)"
-    sensitivity: {to_be_defined: "shape of h_t not fixed in the sheet; proposed default of spec Sect. 3.5 to confirm with Ema"}
+    sensitivity: {low: 6, high: 7}
     source: "Proposed default, specification Sect. 3.5 (outbound before the cut-off)"
     source_type: assumption
     status: to_verify
+    notes: "Generic range approved by Ema 18/11/2026 for assumptions without a range in the sheet: +/-25% (magnitudes), +/-1 h (clock times); shape of h_t explained to Ema 18/11/2026, default to confirm"
     used_by: [model]
 
   - id: dock_outbound_end
@@ -394,10 +396,11 @@ parameters:
     description: End of the outbound dock window
     value: 16
     unit: "h (clock)"
-    sensitivity: {to_be_defined: "shape of h_t not fixed in the sheet; proposed default of spec Sect. 3.5 to confirm with Ema"}
+    sensitivity: {low: 15, high: 17}
     source: "Proposed default, specification Sect. 3.5 (outbound before the cut-off)"
     source_type: assumption
     status: to_verify
+    notes: "Generic range approved by Ema 18/11/2026 for assumptions without a range in the sheet: +/-25% (magnitudes), +/-1 h (clock times); shape of h_t explained to Ema 18/11/2026, default to confirm"
     used_by: [model]
 
   - id: forklift_kwh_per_h
@@ -486,9 +489,10 @@ parameters:
     description: Offices, IT and HVAC during shifts
     value: 5
     unit: kW
-    sensitivity: {to_be_defined: "no range in the approved sheet"}
+    sensitivity: {low: 3.75, high: 6.25}
     source: "Assumption of the approved sheet 17/11/2026"
     source_type: assumption
+    notes: "Generic range approved by Ema 18/11/2026 for assumptions without a range in the sheet: +/-25% (magnitudes), +/-1 h (clock times)"
     used_by: [model]
 
   - id: other_kw
@@ -496,9 +500,10 @@ parameters:
     description: Other loads during shifts (doors, conveyors, wrappers, compressor)
     value: 2.5
     unit: kW
-    sensitivity: {to_be_defined: "no range in the approved sheet"}
+    sensitivity: {low: 1.875, high: 3.125}
     source: "Assumption of the approved sheet 17/11/2026"
     source_type: assumption
+    notes: "Generic range approved by Ema 18/11/2026 for assumptions without a range in the sheet: +/-25% (magnitudes), +/-1 h (clock times)"
     used_by: [model]
 
   - id: offshift_standby_kw
@@ -506,9 +511,10 @@ parameters:
     description: Site stand-by load outside shifts and on weekends
     value: 2
     unit: kW
-    sensitivity: {to_be_defined: "no range in the approved sheet"}
+    sensitivity: {low: 1.5, high: 2.5}
     source: "Assumption of the approved sheet 17/11/2026"
     source_type: assumption
+    notes: "Generic range approved by Ema 18/11/2026 for assumptions without a range in the sheet: +/-25% (magnitudes), +/-1 h (clock times)"
     used_by: [model]
 
   - id: fixed_load_shape
@@ -531,7 +537,7 @@ parameters:
     source: "Ema's decision 17/11/2026: about 100 MWh/yr / 1,300 kWh/kWp, rounded"
     source_type: design_choice
     used_by: [model, data]
-    notes: "Typed 'derived' in the sheet, but the value is a rounded choice, not computed by code: recorded as design choice (to confirm with Ema)."
+    notes: "Typed 'derived' in the sheet, but the value is a rounded choice, not computed by code: recorded as design choice (confirmed by Ema 18/11/2026)."
 
   - id: pv_profile
     group: pv
@@ -568,9 +574,8 @@ parameters:
     description: PV tilt
     value: PVGIS optimal angle
     unit: deg
-    source: "Default proposed in the specification (Sect. 3.5), to confirm with Ema"
+    source: "Default proposed in the specification (Sect. 3.5), confirmed by Ema 18/11/2026"
     source_type: design_choice
-    status: to_verify
     used_by: [data]
 
   # ================================================================ A.3 Orders and service
@@ -590,9 +595,10 @@ parameters:
     description: Share of the daily picks whose orders arrive the evening before (available at shift start)
     value: 50
     unit: "%"
-    sensitivity: {to_be_defined: "'more or less predictable' variants to define"}
+    sensitivity: {low: 37.5, high: 62.5}
     source: "Synthetic arrival profile of the approved sheet 17/11/2026; no open dataset found"
     source_type: assumption
+    notes: "Generic range approved by Ema 18/11/2026 for assumptions without a range in the sheet: +/-25% (magnitudes), +/-1 h (clock times)"
     used_by: [model]
 
   - id: order_arrival_start
@@ -600,9 +606,10 @@ parameters:
     description: First hour of same-day order arrivals (uniform, slots 08-09 to 12-13)
     value: 8
     unit: "h (clock)"
-    sensitivity: {to_be_defined: "'more or less predictable' variants to define"}
+    sensitivity: {low: 7, high: 9}
     source: "Synthetic arrival profile of the approved sheet 17/11/2026; no open dataset found"
     source_type: assumption
+    notes: "Generic range approved by Ema 18/11/2026 for assumptions without a range in the sheet: +/-25% (magnitudes), +/-1 h (clock times)"
     used_by: [model]
 
   - id: order_arrival_end
@@ -610,9 +617,40 @@ parameters:
     description: End of same-day order arrivals (last slot 12-13)
     value: 13
     unit: "h (clock)"
-    sensitivity: {to_be_defined: "'more or less predictable' variants to define"}
+    sensitivity: {low: 12, high: 14}
     source: "Synthetic arrival profile of the approved sheet 17/11/2026; no open dataset found"
     source_type: assumption
+    notes: "Generic range approved by Ema 18/11/2026 for assumptions without a range in the sheet: +/-25% (magnitudes), +/-1 h (clock times)"
+    used_by: [model]
+
+  - id: order_profile_shape
+    group: orders
+    description: Shape of same-day order arrivals within [order_arrival_start, order_arrival_end]
+    value: uniform
+    unit: "-"
+    sensitivity: ["truncated_normal"]
+    source: "Approved sheet 17/11/2026 (uniform); parametric shapes requested by Ema 18/11/2026"
+    source_type: assumption
+    used_by: [model]
+
+  - id: order_peak_hour
+    group: orders
+    description: Peak of same-day order arrivals (truncated-normal shape)
+    value: 12.5
+    unit: "h (clock)"
+    sensitivity: {low: 11.5, high: 13.5}
+    source: "Guerrazzi & Vandin (2026), arXiv:2611.14371v2, Sect. 3.1 p. 12 and Table 4 p. 28 (mu = 12.5 h, citing Liu et al. 2020)"
+    source_type: literature
+    used_by: [model]
+
+  - id: order_spread
+    group: orders
+    description: Standard deviation of same-day order arrivals (truncated-normal shape)
+    value: 2
+    unit: h
+    sensitivity: {low: 1.5, high: 2.5}
+    source: "Guerrazzi & Vandin (2026), arXiv:2611.14371v2, Sect. 3.1 p. 12 and Table 4 p. 28 (sigma = 2 h)"
+    source_type: literature
     used_by: [model]
 
   - id: predictable_share
@@ -642,9 +680,10 @@ parameters:
     description: Start of inbound arrivals u_t (uniform)
     value: 6
     unit: "h (clock)"
-    sensitivity: {to_be_defined: "'concentrated in the morning' variant to define"}
+    sensitivity: {low: 6, high: 7}
     source: "Assumption of the approved sheet 17/11/2026"
     source_type: assumption
+    notes: "Generic range approved by Ema 18/11/2026 for assumptions without a range in the sheet: +/-25% (magnitudes), +/-1 h (clock times); 'concentrated in the morning' is the truncated-normal variant (inbound_profile_shape)"
     used_by: [model]
 
   - id: inbound_end
@@ -652,8 +691,39 @@ parameters:
     description: End of inbound arrivals u_t (uniform)
     value: 14
     unit: "h (clock)"
-    sensitivity: {to_be_defined: "'concentrated in the morning' variant to define"}
+    sensitivity: {low: 13, high: 15}
     source: "Assumption of the approved sheet 17/11/2026"
+    source_type: assumption
+    notes: "Generic range approved by Ema 18/11/2026 for assumptions without a range in the sheet: +/-25% (magnitudes), +/-1 h (clock times); 'concentrated in the morning' is the truncated-normal variant (inbound_profile_shape)"
+    used_by: [model]
+
+  - id: inbound_profile_shape
+    group: orders
+    description: Shape of inbound arrivals u_t within [inbound_start, inbound_end]
+    value: uniform
+    unit: "-"
+    sensitivity: ["truncated_normal"]
+    source: "Approved sheet 17/11/2026 (uniform; variant 'concentrated in the morning'); parametric shapes requested by Ema 18/11/2026"
+    source_type: assumption
+    used_by: [model]
+
+  - id: inbound_peak_hour
+    group: orders
+    description: Peak of inbound arrivals ('concentrated in the morning' variant)
+    value: 8
+    unit: "h (clock)"
+    sensitivity: {low: 7, high: 9}
+    source: "Assumption (18/11/2026) for the 'concentrated in the morning' variant of the sheet"
+    source_type: assumption
+    used_by: [model]
+
+  - id: inbound_spread
+    group: orders
+    description: Standard deviation of inbound arrivals ('concentrated in the morning' variant)
+    value: 2
+    unit: h
+    sensitivity: {low: 1.5, high: 2.5}
+    source: "Assumption (18/11/2026), same spread as order arrivals in Guerrazzi & Vandin (2026)"
     source_type: assumption
     used_by: [model]
 
@@ -673,9 +743,10 @@ parameters:
     description: Initial (and final) stock of the picking area
     value: 1
     unit: days of consumption
-    sensitivity: {to_be_defined: "no range in the approved sheet"}
+    sensitivity: {low: 0.75, high: 1.25}
     source: "Assumption of the approved sheet 17/11/2026"
     source_type: assumption
+    notes: "Generic range approved by Ema 18/11/2026 for assumptions without a range in the sheet: +/-25% (magnitudes), +/-1 h (clock times)"
     used_by: [model]
 
   - id: stock_min_days
@@ -756,9 +827,9 @@ parameters:
     value: null
     unit: kWh per hour
     sensitivity: ["-20%", "+20%"]
-    source: "Besagni, Premoli Vilà, Borgarello (2020), Buildings 10(12) 217 (67 measured households): published only as figures; digitise or replace (Ema to decide)"
+    source: "Besagni, Premoli Vilà, Borgarello (2020), Buildings 10(12) 217 (67 measured households): published only as figures; to digitise in Phase 2 (Ema 18/11/2026)"
     source_type: literature
-    status: to_be_provided
+    status: to_be_derived
     used_by: [rec]
 
   - id: household_kwh
@@ -943,61 +1014,111 @@ parameters:
     source_type: assumption
     used_by: [economics]
 
+  - id: retail_price_2025s1
+    group: economics
+    description: Non-household electricity price, Italy, 20-499 MWh/yr, excl. VAT and recoverable taxes, 2025-S1
+    value: 0.2597
+    unit: EUR/kWh
+    source: "Eurostat nrg_pc_205 (geo=IT, nrg_cons=MWH20-499, tax=X_VAT, currency=EUR), dataset updated 2026-10-19, retrieved 2026-11-18"
+    source_type: real
+    used_by: [economics]
+
+  - id: retail_price_2025s2
+    group: economics
+    description: Non-household electricity price, Italy, 20-499 MWh/yr, excl. VAT and recoverable taxes, 2025-S2
+    value: 0.2377
+    unit: EUR/kWh
+    source: "Eurostat nrg_pc_205 (geo=IT, nrg_cons=MWH20-499, tax=X_VAT, currency=EUR), dataset updated 2026-10-19, retrieved 2026-11-18"
+    source_type: real
+    used_by: [economics]
+
   - id: retail_price
     group: economics
-    description: Retail electricity price paid by the warehouse
+    description: Retail electricity price paid by the warehouse (2025 mean of the two semesters)
     value: null
+    formula: "(retail_price_2025s1 + retail_price_2025s2) / 2 * KWH_PER_MWH"
     unit: EUR/MWh
-    source: "To be provided by Ema (e.g. ARERA or Eurostat non-household prices)"
-    status: to_be_provided
+    sensitivity: {low: 237.7, high: 291.7}
+    source: "Eurostat band IB (20-499 MWh/yr, about 100 MWh/yr for the warehouse), same reference year as the GME prices; sensitivity = min/max semesters 2023-S1..2026-S1 (Eurostat)"
+    source_type: derived
     used_by: [economics]
+    notes: "Ema 18/11/2026: search ARERA/Eurostat. Average price incl. network and system charges, used as the value of avoided purchase."
 
   - id: discount_rate
     group: economics
-    description: Discount rate for NPV (condition B)
-    value: null
+    description: Discount rate for NPV (condition B), real terms
+    value: 5.6
     unit: "%"
-    source: "To be provided by Ema; until then only simple payback is reported"
-    status: to_be_provided
+    sensitivity: {low: 5.0, high: 6.7}
+    source: "ARERA del. 513/2024/R/com, Allegato A, Tabella 11 p. 48: WACC 2025-2027 for electricity distribution and metering = 5.60% (real, pre-tax); sensitivity = range of Tabella 11 (all services, 2022-2027)"
+    source_type: estimate
+    status: to_verify
     used_by: [economics]
+    notes: "Regulated WACC used as a proxy for an SME investment (Ema 18/11/2026: search ARERA/Eurostat). Real rate: cash flows must be in constant prices."
 
   - id: ext_plant_kwp
     group: economics
-    description: Size of the other member's PV plant (condition C)
-    value: null
+    description: Size of the other member's PV plant (condition C); same site and PVGIS profile as condition A
+    value: 80
     unit: kWp
-    source: "To be provided by Ema before Phase 5"
-    status: to_be_provided
+    sensitivity: {low: 40, high: 200}
+    source: "Assumption (Ema 18/11/2026: 'ipotizza tu'): same size and profile as the warehouse plant of condition A, for comparability"
+    source_type: assumption
     used_by: [economics]
 
   - id: grid_emission_factor
     group: economics
-    description: Grid emission factor (optional CO2 KPI)
-    value: null
-    unit: kgCO2/kWh
-    source: "To be provided by Ema; KPI hidden until then"
-    status: to_be_provided
+    description: Emission factor of electricity consumption in Italy, 2023 (optional CO2 KPI)
+    value: 234.7
+    unit: gCO2/kWh
+    sensitivity: {low: 198.9, high: 293.0}
+    source: "ISPRA Rapporto 413/2025, Le emissioni di CO2 nel settore elettrico nazionale e regionale, Tabella 1.3 p. 20-21 (consumi elettrici, 2023); range: 2024 preliminary (198.9) to 2022 (293.0)"
+    source_type: real
     used_by: [report]
 
   # ================================================================ Reference policies (spec Sect. 5.8)
-  - id: p0_internal_windows
+  - id: p0_morning_end
     group: policies
-    description: "P0 current practice: windows of internal missions (first and last shift hours)"
-    value: [[6, 8], [20, 22]]
+    description: "P0 current practice: internal missions from shift start until this hour"
+    value: 8
     unit: "h (clock)"
-    sensitivity: {to_be_defined: "no range in the specification"}
-    source: "Specification Sect. 5.8 (current practice, assumption)"
+    sensitivity: {low: 7, high: 9}
+    source: "Specification Sect. 5.8 (06-08, current practice, assumption)"
     source_type: assumption
+    notes: "Generic range approved by Ema 18/11/2026 for assumptions without a range in the sheet: +/-25% (magnitudes), +/-1 h (clock times)"
     used_by: [model]
 
-  - id: p1_sun_window
+  - id: p0_evening_start
     group: policies
-    description: "P1 follow the sun: window for shiftable missions and charging"
-    value: [11, 15]
+    description: "P0 current practice: internal missions and forklift charging from this hour until shift end"
+    value: 20
     unit: "h (clock)"
-    sensitivity: {to_be_defined: "no range in the specification"}
+    sensitivity: {low: 19, high: 21}
+    source: "Specification Sect. 5.8 (20-22, current practice, assumption)"
+    source_type: assumption
+    notes: "Generic range approved by Ema 18/11/2026 for assumptions without a range in the sheet: +/-25% (magnitudes), +/-1 h (clock times). Charging 'at end of shift' read as this evening window."
+    used_by: [model]
+
+  - id: p1_sun_start
+    group: policies
+    description: "P1 follow the sun: start of the window for shiftable missions and charging"
+    value: 11
+    unit: "h (clock)"
+    sensitivity: {low: 10, high: 12}
     source: "Specification Sect. 1 and 5.8 (sunny hours about 11:00-15:00)"
     source_type: assumption
+    notes: "Generic range approved by Ema 18/11/2026 for assumptions without a range in the sheet: +/-25% (magnitudes), +/-1 h (clock times)"
+    used_by: [model]
+
+  - id: p1_sun_end
+    group: policies
+    description: "P1 follow the sun: end of the window for shiftable missions and charging"
+    value: 15
+    unit: "h (clock)"
+    sensitivity: {low: 14, high: 16}
+    source: "Specification Sect. 1 and 5.8 (sunny hours about 11:00-15:00)"
+    source_type: assumption
+    notes: "Generic range approved by Ema 18/11/2026 for assumptions without a range in the sheet: +/-25% (magnitudes), +/-1 h (clock times)"
     used_by: [model]
 
   # ================================================================ Method
@@ -1064,3 +1185,7 @@ consistency:
   - "shift_start < cutoff_hour <= shift_end"
   - "stock_min_days <= stock_initial_days"
   - "inbound_start >= shift_start and inbound_end <= shift_end"
+  - "shift_start <= order_arrival_start < order_arrival_end <= cutoff_hour"
+  - "shift_start < p0_morning_end <= p0_evening_start < shift_end"
+  - "shift_start <= p1_sun_start < p1_sun_end <= shift_end"
+  - "shift_start <= dock_outbound_start < dock_outbound_end <= shift_end"

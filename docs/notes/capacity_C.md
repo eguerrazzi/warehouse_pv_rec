@@ -63,3 +63,18 @@ figures of 200–680 pallets/h for larger installations (supplychain247.com, war
 project page, US patent family "Storage system and methods"). D'Antonio et al. (2018, 2019,
 IJAMT) give analytical cycle-time models for deep-lane and multi-shuttle AVS/RS; the full text could not
 be read here. These sources are not used as parameter values.
+
+## Papers received on 2026-11-18
+
+- **Guerrazzi & Vandin (2026)**, arXiv:2611.14371v2 — 6 aisles, 6 lifts, 10 shuttles, 1,000-1,529 missions/day:
+  mean fleet utilisation below 10% (Table 8), endpoint cycle times 20.3-41.3 s (Table 5). Real multi-deep
+  AVS/RS run far below capacity at these volumes, consistent with a high C (parallel shuttles).
+- **D'Antonio & Chiabert (2019)**, IJAMT 104:1919-1936 — one lift serving 1-5 tier-to-tier shuttles:
+  throughput 25-145 UL/h (Fig. 3), best with 2-3 shuttles, then the lift becomes the bottleneck. The Cassioli
+  system has tier-captive shuttles and two faster dedicated lifts (1.33 m/s vs 0.2 m/s), so this range is a
+  lower reference rather than an estimate of C.
+- **Lerher, Ekren, Akpunar (2016)**, 14th IMHRC — SBS/RS: cycle time grows from 0.56 to 1.80 min when lift
+  utilisation goes from 0.69 to 0.95 (Table 2, 14 tiers, 30 bays): a published congestion curve to cross-check
+  the M/M/1 cuts of V6 in Phase 3.
+
+Decision unchanged: C = 392 missions/h (5 concurrent tier shuttles), sensitivity on 1-5 concurrent shuttles.

@@ -68,6 +68,14 @@ def test_derived_values(base):
     assert v["stock_min"] == pytest.approx(195)
     assert v["dock_hours_total"] == 20
     assert v["w_rec_annual"] == pytest.approx(195)
+    assert v["retail_price"] == pytest.approx((0.2597 + 0.2377) / 2 * 1000)
+
+
+def test_no_open_sensitivity_ranges(base):
+    """Ema 18/11/2026: every assumption gets a parametrisable range (no to_be_defined left)."""
+    from wpvrec.params.schema import ToBeDefined
+
+    assert [pid for pid, p in base.params.items() if isinstance(p.sensitivity, ToBeDefined)] == []
 
 
 def test_sanity_capacity_vs_average_load(base):
@@ -82,8 +90,7 @@ def test_base_gates(base):
     base.gate("model")  # the LP inputs are all available
     with pytest.raises(ProvenanceGateError, match="household_profile"):
         base.gate("rec")
-    with pytest.raises(ProvenanceGateError, match="retail_price"):
-        base.gate("economics")
+    base.gate("economics")  # retail price (Eurostat), discount rate (ARERA), plant C (assumption)
 
 
 def test_provenance_summary(base):
